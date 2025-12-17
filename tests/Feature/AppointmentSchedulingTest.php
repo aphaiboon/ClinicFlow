@@ -43,7 +43,7 @@ it('completes full appointment scheduling flow', function () {
     $response->assertRedirect();
 
     $appointment = Appointment::where('patient_id', $patient->id)
-        ->where('appointment_date', $appointmentDate->toDateString())
+        ->whereDate('appointment_date', $appointmentDate->toDateString())
         ->first();
 
     expect($appointment)->not->toBeNull()
