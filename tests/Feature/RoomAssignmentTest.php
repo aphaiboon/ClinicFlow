@@ -37,7 +37,7 @@ it('completes full room assignment flow', function () {
 
     $this->assertDatabaseHas('audit_logs', [
         'action' => 'update',
-        'resource_type' => 'App\\Models\\Appointment',
+        'resource_type' => 'Appointment',
         'resource_id' => $appointment->id,
     ]);
 });

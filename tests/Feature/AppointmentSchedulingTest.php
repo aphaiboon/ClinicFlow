@@ -54,7 +54,7 @@ it('completes full appointment scheduling flow', function () {
 
     $this->assertDatabaseHas('audit_logs', [
         'action' => 'create',
-        'resource_type' => 'App\\Models\\Appointment',
+        'resource_type' => 'Appointment',
         'resource_id' => $appointment->id,
     ]);
 });
