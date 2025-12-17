@@ -11,7 +11,7 @@ class UpdateExamRoomRequest extends FormRequest
     public function authorize(): bool
     {
         try {
-            $room = $this->route('examRoom') ?? $this->route('room');
+            $room = $this->route('exam_room') ?? $this->route('examRoom');
         } catch (\LogicException $e) {
             return false;
         }
@@ -21,7 +21,7 @@ class UpdateExamRoomRequest extends FormRequest
 
     public function rules(): array
     {
-        $roomId = $this->route('examRoom')?->id ?? $this->route('room')?->id;
+        $roomId = $this->route('exam_room')?->id ?? $this->route('examRoom')?->id;
 
         return [
             'room_number' => ['sometimes', 'required', 'string', 'max:255', Rule::unique(ExamRoom::class, 'room_number')->ignore($roomId)],

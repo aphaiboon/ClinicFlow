@@ -4,7 +4,6 @@ use App\Enums\UserRole;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Inertia\Testing\AssertableInertia as Assert;
 
 uses(RefreshDatabase::class);
 
@@ -163,4 +162,3 @@ it('prevents receptionist from deleting a patient', function () {
 
     $response->assertForbidden();
 });
-

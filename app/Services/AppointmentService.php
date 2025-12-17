@@ -112,6 +112,38 @@ class AppointmentService
         return $this->updateAppointmentStatus($appointment, AppointmentStatus::Cancelled, $reason);
     }
 
+    public function updateAppointment(Appointment $appointment, array $data): Appointment
+    {
+        return DB::transaction(function () use ($appointment, $data) {
+            $date = Carbon::parse($data['appointment_date'] ?? $appointment->appointment_date->toDateString());
+            $timeParts = explode(':', $data['appointment_time'] ?? $appointment->appointment_time);
+            $time = Carbon::createFromTime((int) $timeParts[0], (int) ($timeParts[1] ?? 0), (int) ($timeParts[2] ?? 0));
+            $duration = $data['duration_minutes'] ?? $appointment->duration_minutes;
+            $userId = $data['user_id'] ?? $appointment->user_id;
+
+            if (($data['appointment_date'] ?? null) || ($data['appointment_time'] ?? null) || ($data['user_id'] ?? null) || ($data['duration_minutes'] ?? null)) {
+                if (! $this->checkClinicianAvailability($userId, $date, $time, $duration, $appointment->id)) {
+                    throw new \RuntimeException('Clinician is not available at the requested time.');
+                }
+            }
+
+            if (isset($data['exam_room_id']) && $data['exam_room_id']) {
+                $room = ExamRoom::findOrFail($data['exam_room_id']);
+                if (! $this->checkRoomAvailability($room->id, $date, $time, $duration, $appointment->id)) {
+                    throw new \RuntimeException('Room is not available at the requested time.');
+                }
+            }
+
+            $before = $appointment->getAttributes();
+            $appointment->update($data);
+            $after = $appointment->fresh()->getAttributes();
+
+            $this->auditService->logUpdate('Appointment', $appointment->id, $before, $after);
+
+            return $appointment->fresh();
+        });
+    }
+
     public function checkClinicianAvailability(
         int $userId,
         Carbon $date,
