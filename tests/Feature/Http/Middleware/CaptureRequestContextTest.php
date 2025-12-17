@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Session;
 
 it('generates and stores request_id', function () {
     $request = Request::create('/test', 'GET');
-    $middleware = new CaptureRequestContext();
+    $middleware = new CaptureRequestContext;
 
     $response = $middleware->handle($request, fn ($req) => response('OK'));
 
@@ -17,7 +17,7 @@ it('generates and stores request_id', function () {
 
 it('generates and stores trace_id', function () {
     $request = Request::create('/test', 'GET');
-    $middleware = new CaptureRequestContext();
+    $middleware = new CaptureRequestContext;
 
     $response = $middleware->handle($request, fn ($req) => response('OK'));
 
@@ -33,7 +33,7 @@ it('captures session_id from Laravel session', function () {
     $request = Request::create('/test', 'GET');
     $request->setLaravelSession(Session::driver());
 
-    $middleware = new CaptureRequestContext();
+    $middleware = new CaptureRequestContext;
 
     $response = $middleware->handle($request, fn ($req) => response('OK'));
 
@@ -46,7 +46,7 @@ it('stores context in request attributes', function () {
     $request = Request::create('/test', 'GET');
     $request->setLaravelSession(Session::driver());
 
-    $middleware = new CaptureRequestContext();
+    $middleware = new CaptureRequestContext;
 
     $response = $middleware->handle($request, fn ($req) => response('OK'));
 
@@ -58,9 +58,9 @@ it('stores context in request attributes', function () {
 it('handles requests without session gracefully', function () {
     $request = Request::create('/test', 'GET');
 
-    $middleware = new CaptureRequestContext();
+    $middleware = new CaptureRequestContext;
 
-    $response =     $response = $middleware->handle($request, fn ($req) => response('OK'));
+    $response = $response = $middleware->handle($request, fn ($req) => response('OK'));
 
     expect($request->attributes->get('request_id'))->not->toBeEmpty()
         ->and($request->attributes->get('trace_id'))->not->toBeEmpty()
@@ -72,7 +72,7 @@ it('reuses existing request_id if present', function () {
     $existingRequestId = 'existing-req-id';
     $request->attributes->set('request_id', $existingRequestId);
 
-    $middleware = new CaptureRequestContext();
+    $middleware = new CaptureRequestContext;
 
     $response = $middleware->handle($request, fn ($req) => response('OK'));
 
@@ -84,7 +84,7 @@ it('reuses existing trace_id if present', function () {
     $existingTraceId = 'existing-trace-id';
     $request->attributes->set('trace_id', $existingTraceId);
 
-    $middleware = new CaptureRequestContext();
+    $middleware = new CaptureRequestContext;
 
     $response = $middleware->handle($request, fn ($req) => response('OK'));
 
@@ -95,7 +95,7 @@ it('generates different request_ids for different requests', function () {
     $request1 = Request::create('/test1', 'GET');
     $request2 = Request::create('/test2', 'GET');
 
-    $middleware = new CaptureRequestContext();
+    $middleware = new CaptureRequestContext;
 
     $middleware->handle($request1, fn ($req) => response('OK'));
     $middleware->handle($request2, fn ($req) => response('OK'));
@@ -103,4 +103,3 @@ it('generates different request_ids for different requests', function () {
     expect($request1->attributes->get('request_id'))
         ->not->toBe($request2->attributes->get('request_id'));
 });
-

@@ -5,7 +5,6 @@ use App\Services\Integration\EventIdGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Request as RequestFacade;
 
 uses(RefreshDatabase::class);
 
@@ -17,7 +16,7 @@ beforeEach(function () {
     Config::set('sentinelstack.environment', 'production');
     Config::set('sentinelstack.tenant_id', 'tenant_123');
 
-    $this->eventIdGenerator = new EventIdGenerator();
+    $this->eventIdGenerator = new EventIdGenerator;
     $this->envelopeBuilder = new EventEnvelopeBuilder($this->eventIdGenerator);
 });
 
@@ -203,4 +202,3 @@ it('includes tenant_id from configuration', function () {
 
     expect($envelope['tenant_id'])->toBe('tenant_123');
 });
-

@@ -1,7 +1,7 @@
 <?php
 
-use App\Events\AuditLogCreated;
 use App\Enums\AuditAction;
+use App\Events\AuditLogCreated;
 use App\Listeners\ForwardAuditLogToSentinelStack;
 use App\Models\AuditLog;
 use App\Models\User;
@@ -119,4 +119,3 @@ it('handles audit log without changes', function () {
 
     $this->listener->handle($event);
 });
-

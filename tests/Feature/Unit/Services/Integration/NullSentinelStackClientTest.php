@@ -3,7 +3,7 @@
 use App\Services\Integration\NullSentinelStackClient;
 
 beforeEach(function () {
-    $this->client = new NullSentinelStackClient();
+    $this->client = new NullSentinelStackClient;
 });
 
 it('ingests single event successfully', function () {

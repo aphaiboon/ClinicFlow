@@ -26,4 +26,3 @@ class CaptureRequestContext
         return $next($request);
     }
 }
-

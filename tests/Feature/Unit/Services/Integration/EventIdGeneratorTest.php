@@ -3,7 +3,7 @@
 use App\Services\Integration\EventIdGenerator;
 
 it('generates event ID with evt_ prefix', function () {
-    $generator = new EventIdGenerator();
+    $generator = new EventIdGenerator;
     $eventId = $generator->generate();
 
     expect($eventId)
@@ -13,8 +13,8 @@ it('generates event ID with evt_ prefix', function () {
 });
 
 it('generates unique event IDs', function () {
-    $generator = new EventIdGenerator();
-    
+    $generator = new EventIdGenerator;
+
     $ids = [];
     for ($i = 0; $i < 100; $i++) {
         $ids[] = $generator->generate();
@@ -24,8 +24,8 @@ it('generates unique event IDs', function () {
 });
 
 it('generates lexicographically sortable event IDs', function () {
-    $generator = new EventIdGenerator();
-    
+    $generator = new EventIdGenerator;
+
     $ids = [];
     for ($i = 0; $i < 10; $i++) {
         $ids[] = $generator->generate();
@@ -39,9 +39,8 @@ it('generates lexicographically sortable event IDs', function () {
 });
 
 it('generates event IDs with correct format length', function () {
-    $generator = new EventIdGenerator();
+    $generator = new EventIdGenerator;
     $eventId = $generator->generate();
 
     expect(strlen($eventId))->toBe(30);
 });
-

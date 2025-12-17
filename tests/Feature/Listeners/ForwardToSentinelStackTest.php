@@ -49,8 +49,8 @@ it('maps PatientCreated to domain_event with correct event_subtype', function ()
             return $payload['event_subtype'] === 'patient.created'
                 && $payload['patient_id'] === $patient->id
                 && $payload['medical_record_number'] === $patient->medical_record_number
-                && !isset($payload['first_name'])
-                && !isset($payload['last_name']);
+                && ! isset($payload['first_name'])
+                && ! isset($payload['last_name']);
         }))
         ->andReturn($expectedEnvelope);
 
@@ -216,11 +216,11 @@ it('ensures PHI safety - no sensitive patient data in payloads', function () {
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
         ->once()
         ->with('domain_event', \Mockery::on(function ($payload) {
-            return !isset($payload['first_name'])
-                && !isset($payload['last_name'])
-                && !isset($payload['date_of_birth'])
-                && !isset($payload['phone'])
-                && !isset($payload['email'])
+            return ! isset($payload['first_name'])
+                && ! isset($payload['last_name'])
+                && ! isset($payload['date_of_birth'])
+                && ! isset($payload['phone'])
+                && ! isset($payload['email'])
                 && isset($payload['patient_id']);
         }))
         ->andReturn(['event_type' => 'domain_event', 'payload' => []]);
@@ -259,4 +259,3 @@ it('uses envelope builder to wrap payloads', function () {
 
     $this->listener->handle($event);
 });
-

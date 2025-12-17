@@ -11,4 +11,3 @@ class EventIdGenerator
         return 'evt_'.Str::ulid();
     }
 }
-
