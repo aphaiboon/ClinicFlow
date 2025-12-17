@@ -44,7 +44,7 @@ it('completes full patient registration flow with audit logging', function () {
     $this->assertDatabaseHas('audit_logs', [
         'user_id' => $user->id,
         'action' => 'create',
-        'resource_type' => 'App\\Models\\Patient',
+        'resource_type' => 'Patient',
         'resource_id' => $patient->id,
     ]);
 });

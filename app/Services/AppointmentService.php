@@ -62,7 +62,14 @@ class AppointmentService
         ?string $reason = null
     ): Appointment {
         return DB::transaction(function () use ($appointment, $status, $reason) {
-            $before = $appointment->getAttributes();
+            if ($status === AppointmentStatus::Cancelled) {
+                if ($appointment->status === AppointmentStatus::Completed) {
+                    throw new \RuntimeException('Cannot cancel a completed appointment.');
+                }
+                if ($appointment->status === AppointmentStatus::Cancelled) {
+                    throw new \RuntimeException('Appointment is already cancelled.');
+                }
+            }
 
             $updateData = ['status' => $status];
             if ($status === AppointmentStatus::Cancelled) {

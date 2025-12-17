@@ -48,7 +48,7 @@ it('completes full patient update flow with audit logging', function () {
 
     $this->assertDatabaseHas('audit_logs', [
         'action' => 'update',
-        'resource_type' => 'App\\Models\\Patient',
+        'resource_type' => 'Patient',
         'resource_id' => $patient->id,
     ]);
 });
@@ -75,7 +75,7 @@ it('tracks changes correctly in audit log during patient update', function () {
     $this->actingAs($user)
         ->put("/patients/{$patient->id}", $updateData);
 
-    $auditLog = \App\Models\AuditLog::where('resource_type', 'App\\Models\\Patient')
+    $auditLog = \App\Models\AuditLog::where('resource_type', 'Patient')
         ->where('resource_id', $patient->id)
         ->where('action', 'update')
         ->latest()
