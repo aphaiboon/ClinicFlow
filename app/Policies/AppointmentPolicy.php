@@ -51,7 +51,11 @@ class AppointmentPolicy
 
     public function cancel(User $user, Appointment $appointment): bool
     {
-        return in_array($user->role, [UserRole::Admin, UserRole::Receptionist], true);
+        if (! in_array($user->role, [UserRole::Admin, UserRole::Receptionist], true)) {
+            return false;
+        }
+
+        return $appointment->status->isCancellable();
     }
 
     public function assignRoom(User $user, Appointment $appointment): bool
