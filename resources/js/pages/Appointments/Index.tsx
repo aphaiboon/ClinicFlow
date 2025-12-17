@@ -181,7 +181,7 @@ export default function Index({ appointments, filters, clinicians }: Appointment
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <StatusBadge status={appointment.status as any} />
+                                                <StatusBadge status={appointment.status as AppointmentStatus} />
                                                 <Link href={`/appointments/${appointment.id}/edit`}>
                                                     <Button variant="outline" size="sm">
                                                         Edit

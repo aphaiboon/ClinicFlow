@@ -1,9 +1,8 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Appointment } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { index, edit, cancel as cancelRoute, assignRoom as assignRoomRoute } from '@/routes/appointments';
 import { Pencil, Calendar, Clock, User, MapPin, X } from 'lucide-react';
 import { useCallback, useState } from 'react';
@@ -14,7 +13,6 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -75,7 +73,7 @@ export default function Show({ appointment, examRooms = [] }: AppointmentsShowPr
                             Appointment #{appointment.id}
                         </h1>
                         <div className="mt-2 flex items-center gap-4">
-                            <StatusBadge status={appointment.status as any} />
+                            <StatusBadge status={appointment.status as AppointmentStatus} />
                         </div>
                     </div>
                     <div className="flex gap-2">

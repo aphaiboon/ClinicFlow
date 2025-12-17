@@ -145,7 +145,7 @@ export default function Show({ patient }: PatientsShowProps) {
                                                 </div>
                                             )}
                                         </div>
-                                        <StatusBadge status={appointment.status as any} />
+                                        <StatusBadge status={appointment.status as AppointmentStatus} />
                                     </div>
                                 ))}
                             </div>

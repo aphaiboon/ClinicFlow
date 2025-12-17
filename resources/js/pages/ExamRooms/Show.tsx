@@ -165,7 +165,7 @@ export default function Show({ room }: ExamRoomsShowProps) {
                                                     )}
                                                 </div>
                                             </div>
-                                            <StatusBadge status={appointment.status as any} />
+                                            <StatusBadge status={appointment.status as AppointmentStatus} />
                                         </div>
                                     ))}
                                 </div>
