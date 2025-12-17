@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\ExamRoom;
 use App\Models\Patient;
