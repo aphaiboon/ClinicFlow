@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AuditAction;
+use App\Events\AuditLogCreated;
 use App\Models\AuditLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
@@ -16,7 +17,7 @@ class AuditService
         ?array $changes = null,
         ?array $metadata = null
     ): AuditLog {
-        return AuditLog::create([
+        $auditLog = AuditLog::create([
             'user_id' => Auth::id(),
             'action' => $action,
             'resource_type' => $resourceType,
@@ -26,6 +27,10 @@ class AuditService
             'user_agent' => Request::userAgent(),
             'metadata' => $metadata,
         ]);
+
+        event(new AuditLogCreated($auditLog));
+
+        return $auditLog;
     }
 
     public function logCreate(string $resourceType, int $resourceId, array $data): AuditLog
