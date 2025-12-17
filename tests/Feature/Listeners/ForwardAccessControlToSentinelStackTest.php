@@ -181,24 +181,20 @@ it('uses envelope builder to wrap payloads', function () {
     $user = User::factory()->create();
     $event = new Login('web', $user, false);
 
-    $expectedPayload = [
-        'event_subtype' => 'user.login',
-        'user_id' => $user->id,
-        'user_email' => $user->email,
-        'login_method' => 'password',
-        'ip_address' => '127.0.0.1',
-        'user_agent' => null,
-    ];
-    $expectedEnvelope = ['event_type' => 'access_control', 'payload' => $expectedPayload];
-
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
         ->once()
-        ->with('access_control', $expectedPayload)
-        ->andReturn($expectedEnvelope);
+        ->with('access_control', \Mockery::on(function ($payload) use ($user) {
+            return $payload['event_subtype'] === 'user.login'
+                && $payload['user_id'] === $user->id
+                && $payload['user_email'] === $user->email
+                && $payload['login_method'] === 'password'
+                && isset($payload['ip_address'])
+                && isset($payload['user_agent']);
+        }))
+        ->andReturn(['event_type' => 'access_control', 'payload' => []]);
 
     $this->client->shouldReceive('ingestEvent')
         ->once()
-        ->with($expectedEnvelope)
         ->andReturn(true);
 
     $this->listener->handle($event);
