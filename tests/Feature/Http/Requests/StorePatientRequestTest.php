@@ -3,7 +3,6 @@
 use App\Enums\Gender;
 use App\Enums\UserRole;
 use App\Http\Requests\StorePatientRequest;
-use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Validator;
@@ -12,7 +11,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->user = User::factory()->create(['role' => UserRole::Receptionist]);
-    $this->request = new StorePatientRequest();
+    $this->request = new StorePatientRequest;
     $this->request->setUserResolver(fn () => $this->user);
 });
 
@@ -192,7 +191,7 @@ it('requires postal_code', function () {
 
 it('authorizes receptionist to create patients', function () {
     $user = User::factory()->create(['role' => UserRole::Receptionist]);
-    $request = new StorePatientRequest();
+    $request = new StorePatientRequest;
     $request->setUserResolver(fn () => $user);
 
     expect($request->authorize())->toBeTrue();
@@ -200,7 +199,7 @@ it('authorizes receptionist to create patients', function () {
 
 it('authorizes admin to create patients', function () {
     $user = User::factory()->create(['role' => UserRole::Admin]);
-    $request = new StorePatientRequest();
+    $request = new StorePatientRequest;
     $request->setUserResolver(fn () => $user);
 
     expect($request->authorize())->toBeTrue();
@@ -208,9 +207,8 @@ it('authorizes admin to create patients', function () {
 
 it('prevents clinician from creating patients', function () {
     $user = User::factory()->create(['role' => UserRole::Clinician]);
-    $request = new StorePatientRequest();
+    $request = new StorePatientRequest;
     $request->setUserResolver(fn () => $user);
 
     expect($request->authorize())->toBeFalse();
 });
-

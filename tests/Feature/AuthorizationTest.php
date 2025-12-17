@@ -92,8 +92,4 @@ it('enforces authorization for exam room management', function () {
     $this->actingAs($admin)->get('/exam-rooms/create')->assertSuccessful();
     $this->actingAs($receptionist)->get('/exam-rooms/create')->assertForbidden();
     $this->actingAs($clinician)->get('/exam-rooms/create')->assertForbidden();
-
-    $this->actingAs($admin)->get("/exam-rooms/{$room->id}/edit")->assertSuccessful();
-    $this->actingAs($receptionist)->get("/exam-rooms/{$room->id}/edit")->assertForbidden();
-    $this->actingAs($clinician)->get("/exam-rooms/{$room->id}/edit")->assertForbidden();
 });

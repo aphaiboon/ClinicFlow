@@ -16,7 +16,7 @@ beforeEach(function () {
 });
 
 it('passes validation with valid data', function () {
-    $request = new UpdatePatientRequest();
+    $request = new UpdatePatientRequest;
     $data = [
         'first_name' => 'Jane',
         'last_name' => 'Smith',
@@ -31,7 +31,7 @@ it('passes validation with valid data', function () {
 });
 
 it('allows all fields to be optional', function () {
-    $request = new UpdatePatientRequest();
+    $request = new UpdatePatientRequest;
     $data = [];
 
     $validator = Validator::make($data, $request->rules());
@@ -40,7 +40,7 @@ it('allows all fields to be optional', function () {
 });
 
 it('validates date_of_birth is in the past when provided', function () {
-    $request = new UpdatePatientRequest();
+    $request = new UpdatePatientRequest;
     $data = [
         'date_of_birth' => now()->addDay()->format('Y-m-d'),
     ];
@@ -52,7 +52,7 @@ it('validates date_of_birth is in the past when provided', function () {
 });
 
 it('validates email format when provided', function () {
-    $request = new UpdatePatientRequest();
+    $request = new UpdatePatientRequest;
     $data = [
         'email' => 'invalid-email',
     ];
@@ -66,10 +66,10 @@ it('validates email format when provided', function () {
 it('authorizes receptionist to update patients', function () {
     $user = User::factory()->create(['role' => UserRole::Receptionist]);
     $patient = Patient::factory()->create();
-    
+
     $request = UpdatePatientRequest::create('/patients/'.$patient->id, 'PUT', []);
     $request->setUserResolver(fn () => $user);
-    
+
     $route = new \Illuminate\Routing\Route(['PUT'], '/patients/{patient}', fn () => null);
     $route->parameters = ['patient' => $patient];
     $request->setRouteResolver(fn () => $route);
@@ -80,10 +80,10 @@ it('authorizes receptionist to update patients', function () {
 it('authorizes admin to update patients', function () {
     $user = User::factory()->create(['role' => UserRole::Admin]);
     $patient = Patient::factory()->create();
-    
+
     $request = UpdatePatientRequest::create('/patients/'.$patient->id, 'PUT', []);
     $request->setUserResolver(fn () => $user);
-    
+
     $route = new \Illuminate\Routing\Route(['PUT'], '/patients/{patient}', fn () => null);
     $route->parameters = ['patient' => $patient];
     $request->setRouteResolver(fn () => $route);
@@ -94,14 +94,13 @@ it('authorizes admin to update patients', function () {
 it('prevents clinician from updating patients', function () {
     $user = User::factory()->create(['role' => UserRole::Clinician]);
     $patient = Patient::factory()->create();
-    
+
     $request = UpdatePatientRequest::create('/patients/'.$patient->id, 'PUT', []);
     $request->setUserResolver(fn () => $user);
-    
+
     $route = new \Illuminate\Routing\Route(['PUT'], '/patients/{patient}', fn () => null);
     $route->parameters = ['patient' => $patient];
     $request->setRouteResolver(fn () => $route);
 
     expect($request->authorize())->toBeFalse();
 });
-
