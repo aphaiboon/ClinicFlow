@@ -2,16 +2,14 @@
 
 namespace App\Services;
 
+use App\Events\PatientCreated;
+use App\Events\PatientUpdated;
 use App\Models\Patient;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class PatientService
 {
-    public function __construct(
-        private AuditService $auditService
-    ) {}
-
     public function createPatient(array $data): Patient
     {
         return DB::transaction(function () use ($data) {
@@ -19,7 +17,7 @@ class PatientService
 
             $patient = Patient::create($data);
 
-            $this->auditService->logCreate('Patient', $patient->id, $data);
+            event(new PatientCreated($patient));
 
             return $patient;
         });
@@ -28,11 +26,9 @@ class PatientService
     public function updatePatient(Patient $patient, array $data): Patient
     {
         return DB::transaction(function () use ($patient, $data) {
-            $before = $patient->getAttributes();
             $patient->update($data);
-            $after = $patient->fresh()->getAttributes();
 
-            $this->auditService->logUpdate('Patient', $patient->id, $before, $after);
+            event(new PatientUpdated($patient));
 
             return $patient->fresh();
         });
