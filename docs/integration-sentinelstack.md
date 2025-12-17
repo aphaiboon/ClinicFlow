@@ -159,6 +159,7 @@ SENTINELSTACK_QUEUE_CONNECTION=redis
 - Retry + DLQ implemented
 - Domain events implemented
 - Audit logs are PHI-safe
+- Access control events implemented
 
 ---
 
@@ -172,6 +173,7 @@ ClinicFlow implements SentinelStack integration through:
 4. **SentinelStack Client**: `SentinelStackClientInterface` with `ingestEvent()` and `ingestEvents()` methods
 5. **Domain Event Forwarding**: `ForwardToSentinelStack` listener forwards domain events as `domain_event` type
 6. **Audit Log Forwarding**: Audit logs forwarded as `audit_log` event type for compliance
+7. **Access Control Event Forwarding**: `ForwardAccessControlToSentinelStack` listener forwards authentication events (Login, Logout, Failed) as `access_control` event type for security monitoring
 
 All integration uses Laravel's queue system (`ShouldQueue`) to ensure asynchronous, non-blocking delivery.
 
