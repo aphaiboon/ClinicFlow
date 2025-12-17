@@ -19,7 +19,7 @@ it('completes full appointment scheduling flow', function () {
     $room = ExamRoom::factory()->create(['is_active' => true]);
 
     $appointmentDate = Carbon::tomorrow();
-    $appointmentTime = '10:00';
+    $appointmentTime = '10:00:00';
 
     $response = $this->actingAs($receptionist)
         ->get('/appointments/create');

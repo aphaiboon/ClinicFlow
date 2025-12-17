@@ -33,7 +33,7 @@ it('enforces authorization for different user roles accessing appointments', fun
     $admin = User::factory()->create(['role' => UserRole::Admin]);
     $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
     $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $appointment = Appointment::factory()->create();
+    $appointment = Appointment::factory()->create(['user_id' => $clinician->id]);
 
     $this->actingAs($admin)->get('/appointments')->assertSuccessful();
     $this->actingAs($receptionist)->get('/appointments')->assertSuccessful();
