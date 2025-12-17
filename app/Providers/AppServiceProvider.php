@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Events\AppointmentCancelled;
 use App\Events\AppointmentScheduled;
 use App\Events\AppointmentUpdated;
+use App\Events\AuditLogCreated;
 use App\Events\PatientCreated;
 use App\Events\PatientUpdated;
 use App\Events\RoomAssigned;
+use App\Listeners\ForwardAuditLogToSentinelStack;
 use App\Listeners\ForwardToSentinelStack;
 use App\Listeners\LogAppointmentActivity;
 use App\Listeners\LogPatientActivity;
@@ -41,6 +43,9 @@ class AppServiceProvider extends ServiceProvider
         RoomAssigned::class => [
             LogAppointmentActivity::class,
             ForwardToSentinelStack::class,
+        ],
+        AuditLogCreated::class => [
+            ForwardAuditLogToSentinelStack::class,
         ],
     ];
 
