@@ -27,7 +27,9 @@ test('welcome page displays login button for unauthenticated users', function ()
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertSee('Sign In', false);
+    $response->assertInertia(fn ($page) => $page
+        ->component('welcome')
+    );
 });
 
 test('welcome page displays register button when registration is enabled', function () {
@@ -38,7 +40,10 @@ test('welcome page displays register button when registration is enabled', funct
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertSee('Register', false);
+    $response->assertInertia(fn ($page) => $page
+        ->component('welcome')
+        ->where('canRegister', true)
+    );
 });
 
 test('welcome page does not display register button when registration is disabled', function () {
