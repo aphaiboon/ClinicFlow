@@ -79,7 +79,7 @@ export default function Welcome({
                         <div className="w-full max-w-6xl">
                             <div className="text-center mb-16">
                                 <div className="mb-8 flex justify-center">
-                                        <div className="relative">
+                                    <div className="relative">
                                         <div className="absolute inset-0 bg-[#1bc3bb]/20 blur-3xl rounded-full" />
                                         <img
                                             src="/images/clinicflow-icon-logo.png"
