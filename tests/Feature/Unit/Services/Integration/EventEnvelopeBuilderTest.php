@@ -96,6 +96,10 @@ it('includes service info from configuration', function () {
 });
 
 it('includes actor context for authenticated user', function () {
+    \Illuminate\Support\Facades\Event::fake([
+        \Illuminate\Auth\Events\Login::class,
+    ]);
+
     $user = \App\Models\User::factory()->create(['email' => 'user@example.com']);
 
     Auth::login($user);
