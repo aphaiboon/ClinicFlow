@@ -8,24 +8,20 @@ it('implements SentinelStackClientInterface', function () {
     expect($client)->toBeInstanceOf(\App\Services\Integration\SentinelStackClientInterface::class);
 });
 
-it('does not throw exceptions when forwarding metrics', function () {
+it('can send an event', function () {
     $client = new NullSentinelStackClient();
-
-    expect(fn () => $client->forwardMetric('test.metric', ['value' => 1]))
-        ->not->toThrow(\Throwable::class);
+    $result = $client->sendEvent('test.event', ['data' => 'value']);
+    expect($result)->toBeTrue();
 });
 
-it('does not throw exceptions when forwarding incidents', function () {
+it('can send a metric', function () {
     $client = new NullSentinelStackClient();
-
-    expect(fn () => $client->forwardIncident('test.incident', ['message' => 'test']))
-        ->not->toThrow(\Throwable::class);
+    $result = $client->sendMetric('test.metric', 123.45, ['tag' => 'value']);
+    expect($result)->toBeTrue();
 });
 
-it('does not throw exceptions when forwarding audit logs', function () {
+it('can log an incident', function () {
     $client = new NullSentinelStackClient();
-
-    expect(fn () => $client->forwardAuditLog(['action' => 'create', 'resource' => 'test']))
-        ->not->toThrow(\Throwable::class);
+    $result = $client->logIncident('test.incident', 'Something happened', ['error' => 'details']);
+    expect($result)->toBeTrue();
 });
-
