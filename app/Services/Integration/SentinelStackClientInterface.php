@@ -4,9 +4,9 @@ namespace App\Services\Integration;
 
 interface SentinelStackClientInterface
 {
-    public function forwardMetric(string $metric, array $data): void;
+    public function sendEvent(string $eventType, array $payload): bool;
 
-    public function forwardIncident(string $incident, array $data): void;
+    public function sendMetric(string $metricName, float $value, array $tags = []): bool;
 
-    public function forwardAuditLog(array $auditData): void;
+    public function logIncident(string $incidentType, string $message, array $details = []): bool;
 }

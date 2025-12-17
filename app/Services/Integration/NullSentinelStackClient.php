@@ -4,9 +4,24 @@ namespace App\Services\Integration;
 
 class NullSentinelStackClient implements SentinelStackClientInterface
 {
-    public function forwardMetric(string $metric, array $data): void {}
+    public function sendEvent(string $eventType, array $payload): bool
+    {
+        \Log::info("NullSentinelStackClient: Event {$eventType} sent with payload: ".json_encode($payload));
 
-    public function forwardIncident(string $incident, array $data): void {}
+        return true;
+    }
 
-    public function forwardAuditLog(array $auditData): void {}
+    public function sendMetric(string $metricName, float $value, array $tags = []): bool
+    {
+        \Log::info("NullSentinelStackClient: Metric {$metricName} with value {$value} and tags: ".json_encode($tags));
+
+        return true;
+    }
+
+    public function logIncident(string $incidentType, string $message, array $details = []): bool
+    {
+        \Log::warning("NullSentinelStackClient: Incident {$incidentType} logged with message: {$message} and details: ".json_encode($details));
+
+        return true;
+    }
 }
