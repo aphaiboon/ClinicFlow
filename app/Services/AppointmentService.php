@@ -143,22 +143,23 @@ class AppointmentService
         int $duration,
         ?int $excludeAppointmentId = null
     ): Collection {
-        $dateString = $date->toDateString();
         $requestStartMinutes = $time->hour * 60 + $time->minute;
         $requestEndMinutes = $requestStartMinutes + $duration;
 
-        return Appointment::where('appointment_date', $dateString)
+        $appointments = Appointment::whereDate('appointment_date', $date->toDateString())
             ->where('exam_room_id', $roomId)
-            ->whereIn('status', [AppointmentStatus::Scheduled, AppointmentStatus::InProgress])
+            ->whereIn('status', ['scheduled', 'in_progress'])
             ->when($excludeAppointmentId, fn ($q) => $q->where('id', '!=', $excludeAppointmentId))
-            ->get()
-            ->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
-                $timeParts = explode(':', $appointment->appointment_time);
-                $apptStartMinutes = ((int) $timeParts[0]) * 60 + ((int) ($timeParts[1] ?? 0));
-                $apptEndMinutes = $apptStartMinutes + $appointment->duration_minutes;
+            ->get();
 
-                return $requestStartMinutes < $apptEndMinutes && $requestEndMinutes > $apptStartMinutes;
-            });
+        return $appointments->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
+            $timeStr = $appointment->appointment_time;
+            $timeParts = explode(':', $timeStr);
+            $apptStartMinutes = ((int) $timeParts[0]) * 60 + ((int) ($timeParts[1] ?? 0));
+            $apptEndMinutes = $apptStartMinutes + $appointment->duration_minutes;
+
+            return $requestStartMinutes < $apptEndMinutes && $requestEndMinutes > $apptStartMinutes;
+        });
     }
 
     public function findConflictingAppointments(
@@ -168,21 +169,22 @@ class AppointmentService
         int $duration,
         ?int $excludeAppointmentId = null
     ): Collection {
-        $dateString = $date->toDateString();
         $requestStartMinutes = $time->hour * 60 + $time->minute;
         $requestEndMinutes = $requestStartMinutes + $duration;
 
-        return Appointment::where('appointment_date', $dateString)
+        $appointments = Appointment::whereDate('appointment_date', $date->toDateString())
             ->where('user_id', $userId)
-            ->whereIn('status', [AppointmentStatus::Scheduled, AppointmentStatus::InProgress])
+            ->whereIn('status', ['scheduled', 'in_progress'])
             ->when($excludeAppointmentId, fn ($q) => $q->where('id', '!=', $excludeAppointmentId))
-            ->get()
-            ->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
-                $timeParts = explode(':', $appointment->appointment_time);
-                $apptStartMinutes = ((int) $timeParts[0]) * 60 + ((int) ($timeParts[1] ?? 0));
-                $apptEndMinutes = $apptStartMinutes + $appointment->duration_minutes;
+            ->get();
 
-                return $requestStartMinutes < $apptEndMinutes && $requestEndMinutes > $apptStartMinutes;
-            });
+        return $appointments->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
+            $timeStr = $appointment->appointment_time;
+            $timeParts = explode(':', $timeStr);
+            $apptStartMinutes = ((int) $timeParts[0]) * 60 + ((int) ($timeParts[1] ?? 0));
+            $apptEndMinutes = $apptStartMinutes + $appointment->duration_minutes;
+
+            return $requestStartMinutes < $apptEndMinutes && $requestEndMinutes > $apptStartMinutes;
+        });
     }
 }
