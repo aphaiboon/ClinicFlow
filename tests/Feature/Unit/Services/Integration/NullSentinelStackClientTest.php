@@ -2,26 +2,58 @@
 
 use App\Services\Integration\NullSentinelStackClient;
 
+beforeEach(function () {
+    $this->client = new NullSentinelStackClient();
+});
+
+it('ingests single event successfully', function () {
+    $envelope = [
+        'event_id' => 'evt_123',
+        'event_type' => 'domain_event',
+        'timestamp' => now()->toIso8601String(),
+        'payload' => ['test' => 'data'],
+    ];
+
+    $result = $this->client->ingestEvent($envelope);
+
+    expect($result)->toBeTrue();
+});
+
+it('ingests batch events successfully', function () {
+    $envelopes = [
+        [
+            'event_id' => 'evt_123',
+            'event_type' => 'domain_event',
+            'timestamp' => now()->toIso8601String(),
+            'payload' => ['test' => 'data1'],
+        ],
+        [
+            'event_id' => 'evt_456',
+            'event_type' => 'audit_log',
+            'timestamp' => now()->toIso8601String(),
+            'payload' => ['test' => 'data2'],
+        ],
+    ];
+
+    $result = $this->client->ingestEvents($envelopes);
+
+    expect($result)->toBeTrue();
+});
+
+it('handles empty batch gracefully', function () {
+    $result = $this->client->ingestEvents([]);
+
+    expect($result)->toBeTrue();
+});
+
+it('handles invalid envelope gracefully', function () {
+    $invalidEnvelope = ['invalid' => 'data'];
+
+    $result = $this->client->ingestEvent($invalidEnvelope);
+
+    expect($result)->toBeTrue();
+});
+
 it('implements SentinelStackClientInterface', function () {
-    $client = new NullSentinelStackClient;
-
-    expect($client)->toBeInstanceOf(\App\Services\Integration\SentinelStackClientInterface::class);
-});
-
-it('can send an event', function () {
-    $client = new NullSentinelStackClient;
-    $result = $client->sendEvent('test.event', ['data' => 'value']);
-    expect($result)->toBeTrue();
-});
-
-it('can send a metric', function () {
-    $client = new NullSentinelStackClient;
-    $result = $client->sendMetric('test.metric', 123.45, ['tag' => 'value']);
-    expect($result)->toBeTrue();
-});
-
-it('can log an incident', function () {
-    $client = new NullSentinelStackClient;
-    $result = $client->logIncident('test.incident', 'Something happened', ['error' => 'details']);
-    expect($result)->toBeTrue();
+    expect($this->client)->toBeInstanceOf(\App\Services\Integration\SentinelStackClientInterface::class);
 });

@@ -6,23 +6,23 @@ use Illuminate\Support\Facades\Log;
 
 class NullSentinelStackClient implements SentinelStackClientInterface
 {
-    public function sendEvent(string $eventType, array $payload): bool
+    public function ingestEvent(array $envelope): bool
     {
-        Log::info("NullSentinelStackClient: Event {$eventType} sent with payload: ".json_encode($payload));
+        Log::info('NullSentinelStackClient: Event ingested', ['envelope' => $envelope]);
 
         return true;
     }
 
-    public function sendMetric(string $metricName, float $value, array $tags = []): bool
+    public function ingestEvents(array $envelopes): bool
     {
-        Log::info("NullSentinelStackClient: Metric {$metricName} with value {$value} and tags: ".json_encode($tags));
+        if (empty($envelopes)) {
+            return true;
+        }
 
-        return true;
-    }
-
-    public function logIncident(string $incidentType, string $message, array $details = []): bool
-    {
-        Log::warning("NullSentinelStackClient: Incident {$incidentType} logged with message: {$message} and details: ".json_encode($details));
+        Log::info('NullSentinelStackClient: Batch events ingested', [
+            'count' => count($envelopes),
+            'envelopes' => $envelopes,
+        ]);
 
         return true;
     }
