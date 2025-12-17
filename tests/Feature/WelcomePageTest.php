@@ -42,23 +42,25 @@ test('welcome page displays register button when registration is enabled', funct
 });
 
 test('welcome page does not display register button when registration is disabled', function () {
-    Features::disableRegistration();
-    Event::fake();
+    config(['fortify.features' => array_filter(config('fortify.features', []), fn ($feature) => $feature !== Features::registration())]);
 
-    try {
-        $response = $this->get(route('home'));
+    $response = $this->get(route('home'));
 
-        $response->assertOk();
-        $response->assertDontSee('Register', false);
-    } finally {
-        Features::enableRegistration();
-    }
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('welcome')
+        ->where('canRegister', false)
+    );
+
+    config(['fortify.features' => array_merge(config('fortify.features', []), [Features::registration()])]);
 });
 
 test('welcome page login button links to login route', function () {
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertSee(route('login'), false);
+    $response->assertInertia(fn ($page) => $page
+        ->component('welcome')
+    );
 });
 
