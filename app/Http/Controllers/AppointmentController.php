@@ -52,7 +52,11 @@ class AppointmentController extends Controller
     {
         $this->authorize('create', Appointment::class);
 
-        return Inertia::render('Appointments/Create');
+        return Inertia::render('Appointments/Create', [
+            'patients' => \App\Models\Patient::orderBy('last_name')->get(),
+            'clinicians' => \App\Models\User::where('role', \App\Enums\UserRole::Clinician)->orWhere('role', \App\Enums\UserRole::Admin)->orderBy('name')->get(),
+            'examRooms' => \App\Models\ExamRoom::where('is_active', true)->orderBy('room_number')->get(),
+        ]);
     }
 
     public function store(StoreAppointmentRequest $request): RedirectResponse
@@ -75,6 +79,7 @@ class AppointmentController extends Controller
 
         return Inertia::render('Appointments/Show', [
             'appointment' => $appointment,
+            'examRooms' => \App\Models\ExamRoom::where('is_active', true)->orderBy('room_number')->get(),
         ]);
     }
 
@@ -86,6 +91,9 @@ class AppointmentController extends Controller
 
         return Inertia::render('Appointments/Edit', [
             'appointment' => $appointment,
+            'patients' => \App\Models\Patient::orderBy('last_name')->get(),
+            'clinicians' => \App\Models\User::where('role', \App\Enums\UserRole::Clinician)->orWhere('role', \App\Enums\UserRole::Admin)->orderBy('name')->get(),
+            'examRooms' => \App\Models\ExamRoom::where('is_active', true)->orderBy('room_number')->get(),
         ]);
     }
 
