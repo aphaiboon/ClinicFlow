@@ -14,11 +14,11 @@ use App\Listeners\ForwardAuditLogToSentinelStack;
 use App\Listeners\ForwardToSentinelStack;
 use App\Listeners\LogAppointmentActivity;
 use App\Listeners\LogPatientActivity;
+use App\Services\Integration\NullSentinelStackClient;
+use App\Services\Integration\SentinelStackClientInterface;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
-use App\Services\Integration\NullSentinelStackClient;
-use App\Services\Integration\SentinelStackClientInterface;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -50,6 +50,15 @@ class AppServiceProvider extends ServiceProvider
         ],
         AuditLogCreated::class => [
             ForwardAuditLogToSentinelStack::class,
+        ],
+        Login::class => [
+            ForwardAccessControlToSentinelStack::class,
+        ],
+        Logout::class => [
+            ForwardAccessControlToSentinelStack::class,
+        ],
+        Failed::class => [
+            ForwardAccessControlToSentinelStack::class,
         ],
     ];
 

@@ -33,8 +33,8 @@ class ForwardAccessControlToSentinelStack implements ShouldQueue
             ],
             $event instanceof Logout => [
                 'event_subtype' => 'user.logout',
-                'user_id' => $event->user->id,
-                'user_email' => $event->user->email,
+                'user_id' => $event->user?->id,
+                'user_email' => $event->user?->email,
                 'ip_address' => Request::ip(),
                 'user_agent' => Request::userAgent(),
             ],
@@ -52,4 +52,3 @@ class ForwardAccessControlToSentinelStack implements ShouldQueue
         $this->sentinelStackClient->ingestEvent($envelope);
     }
 }
-

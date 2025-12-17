@@ -119,6 +119,10 @@ it('includes actor context for authenticated user', function () {
 });
 
 it('handles unauthenticated requests gracefully', function () {
+    \Illuminate\Support\Facades\Event::fake([
+        \Illuminate\Auth\Events\Logout::class,
+    ]);
+
     Auth::logout();
 
     $request = \Illuminate\Http\Request::create('/test', 'GET', [], [], [], [
