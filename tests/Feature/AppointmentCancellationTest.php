@@ -40,7 +40,7 @@ it('completes full appointment cancellation flow', function () {
 
     $this->assertDatabaseHas('audit_logs', [
         'action' => 'update',
-        'resource_type' => 'App\\Models\\Appointment',
+        'resource_type' => 'Appointment',
         'resource_id' => $appointment->id,
     ]);
 });

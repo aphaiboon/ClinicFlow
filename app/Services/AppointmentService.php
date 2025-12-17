@@ -3,6 +3,10 @@
 namespace App\Services;
 
 use App\Enums\AppointmentStatus;
+use App\Events\AppointmentCancelled;
+use App\Events\AppointmentScheduled;
+use App\Events\AppointmentUpdated;
+use App\Events\RoomAssigned;
 use App\Models\Appointment;
 use App\Models\ExamRoom;
 use Carbon\Carbon;
@@ -12,7 +16,6 @@ use Illuminate\Support\Facades\DB;
 class AppointmentService
 {
     public function __construct(
-        private AuditService $auditService,
         private ExamRoomService $examRoomService
     ) {}
 
@@ -47,7 +50,7 @@ class AppointmentService
             $data['status'] = AppointmentStatus::Scheduled;
             $appointment = Appointment::create($data);
 
-            $this->auditService->logCreate('Appointment', $appointment->id, $data);
+            event(new AppointmentScheduled($appointment));
 
             return $appointment;
         });
@@ -68,9 +71,12 @@ class AppointmentService
             }
 
             $appointment->update($updateData);
-            $after = $appointment->fresh()->getAttributes();
 
-            $this->auditService->logUpdate('Appointment', $appointment->id, $before, $after);
+            if ($status === AppointmentStatus::Cancelled) {
+                event(new AppointmentCancelled($appointment->fresh()));
+            } else {
+                event(new AppointmentUpdated($appointment->fresh()));
+            }
 
             return $appointment->fresh();
         });
@@ -97,11 +103,9 @@ class AppointmentService
                 throw new \RuntimeException('Room is not available at the appointment time.');
             }
 
-            $before = $appointment->getAttributes();
             $appointment->update(['exam_room_id' => $room->id]);
-            $after = $appointment->fresh()->getAttributes();
 
-            $this->auditService->logUpdate('Appointment', $appointment->id, $before, $after);
+            event(new RoomAssigned($appointment->fresh()));
 
             return $appointment->fresh();
         });
@@ -134,11 +138,9 @@ class AppointmentService
                 }
             }
 
-            $before = $appointment->getAttributes();
             $appointment->update($data);
-            $after = $appointment->fresh()->getAttributes();
 
-            $this->auditService->logUpdate('Appointment', $appointment->id, $before, $after);
+            event(new AppointmentUpdated($appointment->fresh()));
 
             return $appointment->fresh();
         });
