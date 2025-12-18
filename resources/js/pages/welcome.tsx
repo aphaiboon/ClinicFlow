@@ -63,7 +63,7 @@ export default function Welcome({
                             <img
                                 src="/images/clinicflow-text-logo.png"
                                 alt="ClinicFlow"
-                                className="hidden h-6 sm:block dark:invert"
+                                className="hidden h-6 sm:block dark:brightness-0 dark:invert"
                             />
                         </Link>
                         <nav className="flex items-center gap-3">
