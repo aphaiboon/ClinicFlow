@@ -12,7 +12,7 @@ class EventEnvelopeBuilder
         private EventIdGenerator $eventIdGenerator
     ) {}
 
-    public function buildEnvelope(string $eventType, array $payload): array
+    public function buildEnvelope(string $eventType, array $payload = [], ?int $organizationId = null): array
     {
         return [
             'event_id' => $this->eventIdGenerator->generate(),
@@ -25,7 +25,7 @@ class EventEnvelopeBuilder
                 'region' => Config::get('sentinelstack.region', 'unknown'),
             ],
             'environment' => Config::get('sentinelstack.environment', 'development'),
-            'tenant_id' => $this->resolveTenantId($payload),
+            'tenant_id' => $organizationId ? (string) $organizationId : Config::get('sentinelstack.tenant_id'),
             'actor' => [
                 'user_id' => Auth::id() ? (string) Auth::id() : null,
                 'user_email' => Auth::user()?->email,
