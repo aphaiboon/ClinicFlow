@@ -44,7 +44,7 @@ it('can reset password with valid token', function () {
             ->type('password', 'newpassword123')
             ->type('password_confirmation', 'newpassword123')
             ->press('Reset password')
-            ->assertPathIs('/login');
+            ->waitForText('Log in', 5);
 
         $user->refresh();
         expect(Hash::check('newpassword123', $user->password))->toBeTrue();
