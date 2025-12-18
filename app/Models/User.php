@@ -93,4 +93,18 @@ class User extends Authenticatable
             ->wherePivotIn('role', [OrganizationRole::Owner->value, OrganizationRole::Admin->value])
             ->exists();
     }
+
+    public function isMemberOf(Organization $organization): bool
+    {
+        return $this->organizations()->where('organizations.id', $organization->id)->exists();
+    }
+
+    public function getOrganizationRole(Organization $organization): ?OrganizationRole
+    {
+        $pivot = $this->organizations()
+            ->where('organizations.id', $organization->id)
+            ->first()?->pivot;
+
+        return $pivot ? OrganizationRole::from($pivot->role) : null;
+    }
 }
