@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->belongsTo(Organization::class, 'current_organization_id');
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === UserRole::SuperAdmin;
+    }
+
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);
