@@ -8,7 +8,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->user = User::factory()->create();
+    $this->organization = \App\Models\Organization::factory()->create();
+    $this->user = User::factory()->create(['current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($this->user->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
     $this->actingAs($this->user);
     $this->service = app(PatientService::class);
 });

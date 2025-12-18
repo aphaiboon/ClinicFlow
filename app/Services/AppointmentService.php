@@ -11,6 +11,7 @@ use App\Models\Appointment;
 use App\Models\ExamRoom;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AppointmentService
@@ -48,6 +49,11 @@ class AppointmentService
             }
 
             $data['status'] = AppointmentStatus::Scheduled;
+
+            if (! isset($data['organization_id']) && Auth::check() && Auth::user()->current_organization_id) {
+                $data['organization_id'] = Auth::user()->current_organization_id;
+            }
+
             $appointment = Appointment::create($data);
 
             event(new AppointmentScheduled($appointment));

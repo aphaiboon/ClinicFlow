@@ -17,7 +17,7 @@ class AuditService
         ?array $changes = null,
         ?array $metadata = null
     ): AuditLog {
-        $auditLog = AuditLog::create([
+        $auditData = [
             'user_id' => Auth::id(),
             'action' => $action,
             'resource_type' => $resourceType,
@@ -26,7 +26,13 @@ class AuditService
             'ip_address' => Request::ip(),
             'user_agent' => Request::userAgent(),
             'metadata' => $metadata,
-        ]);
+        ];
+
+        if (Auth::check() && Auth::user()->current_organization_id) {
+            $auditData['organization_id'] = Auth::user()->current_organization_id;
+        }
+
+        $auditLog = AuditLog::create($auditData);
 
         event(new AuditLogCreated($auditLog));
 

@@ -7,6 +7,7 @@ use App\Models\Appointment;
 use App\Models\ExamRoom;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ExamRoomService
@@ -18,6 +19,10 @@ class ExamRoomService
     public function createRoom(array $data): ExamRoom
     {
         return DB::transaction(function () use ($data) {
+            if (! isset($data['organization_id']) && Auth::check() && Auth::user()->current_organization_id) {
+                $data['organization_id'] = Auth::user()->current_organization_id;
+            }
+
             $room = ExamRoom::create($data);
 
             $this->auditService->logCreate('ExamRoom', $room->id, $data);

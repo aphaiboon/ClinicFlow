@@ -6,6 +6,7 @@ use App\Events\PatientCreated;
 use App\Events\PatientUpdated;
 use App\Models\Patient;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PatientService
@@ -14,6 +15,10 @@ class PatientService
     {
         return DB::transaction(function () use ($data) {
             $data['medical_record_number'] = $this->generateMedicalRecordNumber();
+
+            if (! isset($data['organization_id']) && Auth::check() && Auth::user()->current_organization_id) {
+                $data['organization_id'] = Auth::user()->current_organization_id;
+            }
 
             $patient = Patient::create($data);
 
