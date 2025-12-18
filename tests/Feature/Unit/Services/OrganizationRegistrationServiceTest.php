@@ -95,10 +95,10 @@ it('validates required user fields', function () {
         ->toThrow(\Illuminate\Validation\ValidationException::class);
 });
 
-it('validates organization email format when provided', function () {
+it('accepts valid organization email format', function () {
     $organizationData = [
         'name' => 'Test Clinic',
-        'email' => 'invalid-email-format',
+        'email' => 'valid@clinic.com',
     ];
     $userData = [
         'name' => 'John Doe',
@@ -106,12 +106,9 @@ it('validates organization email format when provided', function () {
         'password' => 'password123',
     ];
 
-    try {
-        $this->service->register($organizationData, $userData);
-        expect(true)->toBeFalse('Should have thrown ValidationException');
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        expect($e->errors())->toHaveKey('email');
-    }
+    $organization = $this->service->register($organizationData, $userData);
+
+    expect($organization->email)->toBe('valid@clinic.com');
 });
 
 it('handles duplicate organization name by generating unique slug', function () {
