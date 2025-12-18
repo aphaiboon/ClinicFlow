@@ -104,37 +104,37 @@
 }
 
 .dark {
-    --background: oklch(0.15 0 0);
-    --foreground: oklch(0.98 0 0);
-    --card: oklch(0.2 0.01 240);
-    --card-foreground: oklch(0.98 0 0);
-    --popover: oklch(0.2 0.01 240);
-    --popover-foreground: oklch(0.98 0 0);
+    --background: oklch(0.2 0 0);
+    --foreground: oklch(0.92 0 0);
+    --card: oklch(0.22 0.01 240);
+    --card-foreground: oklch(0.92 0 0);
+    --popover: oklch(0.22 0.01 240);
+    --popover-foreground: oklch(0.92 0 0);
     --primary: oklch(0.76 0.11 178);
-    --primary-foreground: oklch(0.98 0 0);
+    --primary-foreground: oklch(0.92 0 0);
     --secondary: oklch(0.3 0.02 240);
-    --secondary-foreground: oklch(0.98 0 0);
+    --secondary-foreground: oklch(0.92 0 0);
     --muted: oklch(0.3 0.02 240);
     --muted-foreground: oklch(0.7 0.01 240);
     --accent: oklch(0.3 0.02 178);
-    --accent-foreground: oklch(0.98 0 0);
+    --accent-foreground: oklch(0.92 0 0);
     --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.98 0 0);
-    --border: oklch(0.3 0.02 240);
-    --input: oklch(0.3 0.02 240);
+    --destructive-foreground: oklch(0.92 0 0);
+    --border: oklch(0.28 0.02 240);
+    --input: oklch(0.28 0.02 240);
     --ring: oklch(0.76 0.11 178);
     --chart-1: oklch(0.76 0.11 178);
     --chart-2: oklch(0.72 0.15 65);
     --chart-3: oklch(0.77 0.11 65);
     --chart-4: oklch(0.5 0.05 65);
     --chart-5: oklch(0.3 0.02 240);
-    --sidebar: oklch(0.2 0.01 240);
-    --sidebar-foreground: oklch(0.98 0 0);
+    --sidebar: oklch(0.22 0.01 240);
+    --sidebar-foreground: oklch(0.92 0 0);
     --sidebar-primary: oklch(0.76 0.11 178);
-    --sidebar-primary-foreground: oklch(0.98 0 0);
+    --sidebar-primary-foreground: oklch(0.92 0 0);
     --sidebar-accent: oklch(0.3 0.02 178);
-    --sidebar-accent-foreground: oklch(0.98 0 0);
-    --sidebar-border: oklch(0.3 0.02 240);
+    --sidebar-accent-foreground: oklch(0.92 0 0);
+    --sidebar-border: oklch(0.28 0.02 240);
     --sidebar-ring: oklch(0.76 0.11 178);
 
     --clinicflow-teal: oklch(0.76 0.11 178);
