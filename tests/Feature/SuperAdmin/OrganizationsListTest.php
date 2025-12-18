@@ -37,10 +37,13 @@ it('organizations list shows organization details', function () {
 
     $response->assertInertia(fn (Assert $page) => $page
         ->component('SuperAdmin/OrganizationsList')
-        ->has('organizations.data.0', fn (Assert $org) => $org
-            ->where('name', 'Test Clinic')
-            ->where('email', 'test@clinic.com')
-            ->where('is_active', true)
-        )
+        ->has('organizations.data')
+        ->where('organizations.data', function ($orgs) {
+            return collect($orgs)->contains(function ($org) {
+                return $org['name'] === 'Test Clinic'
+                    && $org['email'] === 'test@clinic.com'
+                    && $org['is_active'] === true;
+            });
+        })
     );
 });

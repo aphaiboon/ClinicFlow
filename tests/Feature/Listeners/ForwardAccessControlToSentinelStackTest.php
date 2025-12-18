@@ -1,6 +1,7 @@
 <?php
 
 use App\Listeners\ForwardAccessControlToSentinelStack;
+use App\Models\Organization;
 use App\Models\User;
 use App\Services\Integration\EventEnvelopeBuilder;
 use App\Services\Integration\SentinelStackClientInterface;
@@ -9,12 +10,14 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\mock;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->organization = Organization::factory()->create();
     $this->envelopeBuilder = mock(EventEnvelopeBuilder::class);
     $this->client = mock(SentinelStackClientInterface::class);
     $this->listener = new ForwardAccessControlToSentinelStack($this->client, $this->envelopeBuilder);
@@ -26,7 +29,11 @@ beforeEach(function () {
 });
 
 it('maps Login event to access_control with correct event_subtype', function () {
-    $user = User::factory()->create(['email' => 'test@example.com']);
+    $user = User::factory()->create([
+        'email' => 'test@example.com',
+        'current_organization_id' => $this->organization->id,
+    ]);
+    Auth::login($user);
     $event = new Login('web', $user, false);
 
     $expectedEnvelope = [
@@ -46,7 +53,7 @@ it('maps Login event to access_control with correct event_subtype', function () 
                 && $payload['user_email'] === $user->email
                 && isset($payload['ip_address'])
                 && isset($payload['user_agent']);
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -58,7 +65,11 @@ it('maps Login event to access_control with correct event_subtype', function () 
 });
 
 it('maps Logout event to access_control with correct event_subtype', function () {
-    $user = User::factory()->create(['email' => 'test@example.com']);
+    $user = User::factory()->create([
+        'email' => 'test@example.com',
+        'current_organization_id' => $this->organization->id,
+    ]);
+    Auth::login($user);
     $event = new Logout('web', $user);
 
     $expectedEnvelope = [
@@ -78,7 +89,7 @@ it('maps Logout event to access_control with correct event_subtype', function ()
                 && $payload['user_email'] === $user->email
                 && isset($payload['ip_address'])
                 && isset($payload['user_agent']);
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -110,7 +121,7 @@ it('maps Failed event to access_control with correct event_subtype', function ()
                 && isset($payload['ip_address'])
                 && isset($payload['user_agent'])
                 && isset($payload['reason']);
-        }))
+        }), null)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -129,7 +140,7 @@ it('ensures password is never included in Failed event payload', function () {
         ->with('access_control', \Mockery::on(function ($payload) {
             return ! isset($payload['password'])
                 && ! isset($payload['credentials']);
-        }))
+        }), null)
         ->andReturn(['event_type' => 'access_control', 'payload' => []]);
 
     $this->client->shouldReceive('ingestEvent')
@@ -148,7 +159,7 @@ it('handles Failed event without email in credentials', function () {
             return $payload['event_subtype'] === 'user.login_failed'
                 && (! isset($payload['attempted_email']) || $payload['attempted_email'] === null)
                 && ! isset($payload['password']);
-        }))
+        }), null)
         ->andReturn(['event_type' => 'access_control', 'payload' => []]);
 
     $this->client->shouldReceive('ingestEvent')
@@ -159,7 +170,8 @@ it('handles Failed event without email in credentials', function () {
 });
 
 it('includes login_method in Login event payload', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['current_organization_id' => $this->organization->id]);
+    Auth::login($user);
     $event = new Login('web', $user, false);
 
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
@@ -167,7 +179,7 @@ it('includes login_method in Login event payload', function () {
         ->with('access_control', \Mockery::on(function ($payload) {
             return isset($payload['login_method'])
                 && $payload['login_method'] === 'password';
-        }))
+        }), $this->organization->id)
         ->andReturn(['event_type' => 'access_control', 'payload' => []]);
 
     $this->client->shouldReceive('ingestEvent')
@@ -178,7 +190,8 @@ it('includes login_method in Login event payload', function () {
 });
 
 it('uses envelope builder to wrap payloads', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->create(['current_organization_id' => $this->organization->id]);
+    Auth::login($user);
     $event = new Login('web', $user, false);
 
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
@@ -190,7 +203,7 @@ it('uses envelope builder to wrap payloads', function () {
                 && $payload['login_method'] === 'password'
                 && isset($payload['ip_address'])
                 && isset($payload['user_agent']);
-        }))
+        }), $this->organization->id)
         ->andReturn(['event_type' => 'access_control', 'payload' => []]);
 
     $this->client->shouldReceive('ingestEvent')

@@ -54,12 +54,12 @@ it('organization data view shows members', function () {
 
     $response->assertInertia(fn (Assert $page) => $page
         ->component('SuperAdmin/OrganizationDataView')
-        ->has('organization.members', 2)
+        ->has('organization.users', 2)
     );
 });
 
 it('organization data view shows patients count', function () {
-    Patient::factory()->count(5)->create(['organization_id' => $this->organization->id]);
+    Patient::factory()->for($this->organization)->count(5)->create();
 
     $response = $this->actingAs($this->superAdmin)
         ->get(route('super-admin.organizations.show', $this->organization));

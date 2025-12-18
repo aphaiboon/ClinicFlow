@@ -1,9 +1,11 @@
 <?php
 
 use App\Enums\AppointmentStatus;
+use App\Enums\OrganizationRole;
 use App\Enums\UserRole;
 use App\Models\Appointment;
 use App\Models\ExamRoom;
+use App\Models\Organization;
 use App\Models\Patient;
 use App\Models\User;
 use Carbon\Carbon;
@@ -11,20 +13,38 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-it('completes full room assignment flow', function () {
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient = Patient::factory()->create();
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+beforeEach(function () {
+    $this->organization = Organization::factory()->create();
+    $this->receptionist = User::factory()->create([
+        'role' => UserRole::User,
+        'current_organization_id' => $this->organization->id,
+    ]);
+    $this->clinician = User::factory()->create([
+        'role' => UserRole::User,
+        'current_organization_id' => $this->organization->id,
+    ]);
+    $this->organization->users()->attach($this->receptionist->id, [
+        'role' => OrganizationRole::Receptionist->value,
+        'joined_at' => now(),
+    ]);
+    $this->organization->users()->attach($this->clinician->id, [
+        'role' => OrganizationRole::Clinician->value,
+        'joined_at' => now(),
+    ]);
+});
 
-    $appointment = Appointment::factory()->create([
+it('completes full room assignment flow', function () {
+    $patient = Patient::factory()->for($this->organization)->create();
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
+
+    $appointment = Appointment::factory()->for($this->organization)->create([
         'patient_id' => $patient->id,
-        'user_id' => $clinician->id,
+        'user_id' => $this->clinician->id,
         'exam_room_id' => null,
         'status' => AppointmentStatus::Scheduled,
     ]);
 
-    $response = $this->actingAs($receptionist)
+    $response = $this->actingAs($this->receptionist)
         ->post("/appointments/{$appointment->id}/assign-room", [
             'exam_room_id' => $room->id,
         ]);
@@ -36,6 +56,7 @@ it('completes full room assignment flow', function () {
     expect($appointment->exam_room_id)->toBe($room->id);
 
     $this->assertDatabaseHas('audit_logs', [
+        'organization_id' => $this->organization->id,
         'action' => 'update',
         'resource_type' => 'Appointment',
         'resource_id' => $appointment->id,
@@ -43,14 +64,19 @@ it('completes full room assignment flow', function () {
 });
 
 it('prevents assigning room with scheduling conflict', function () {
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician1 = User::factory()->create(['role' => UserRole::Clinician]);
-    $clinician2 = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient1 = Patient::factory()->create();
-    $patient2 = Patient::factory()->create();
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+    $clinician2 = User::factory()->create([
+        'role' => UserRole::User,
+        'current_organization_id' => $this->organization->id,
+    ]);
+    $this->organization->users()->attach($clinician2->id, [
+        'role' => OrganizationRole::Clinician->value,
+        'joined_at' => now(),
+    ]);
+    $patient1 = Patient::factory()->for($this->organization)->create();
+    $patient2 = Patient::factory()->for($this->organization)->create();
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
 
-    $existingAppointment = Appointment::factory()->create([
+    $existingAppointment = Appointment::factory()->for($this->organization)->create([
         'exam_room_id' => $room->id,
         'appointment_date' => Carbon::tomorrow()->toDateString(),
         'appointment_time' => '10:00',
@@ -58,7 +84,7 @@ it('prevents assigning room with scheduling conflict', function () {
         'status' => AppointmentStatus::Scheduled,
     ]);
 
-    $appointment = Appointment::factory()->create([
+    $appointment = Appointment::factory()->for($this->organization)->create([
         'patient_id' => $patient2->id,
         'user_id' => $clinician2->id,
         'exam_room_id' => null,
@@ -68,7 +94,7 @@ it('prevents assigning room with scheduling conflict', function () {
         'status' => AppointmentStatus::Scheduled,
     ]);
 
-    $response = $this->actingAs($receptionist)
+    $response = $this->actingAs($this->receptionist)
         ->post("/appointments/{$appointment->id}/assign-room", [
             'exam_room_id' => $room->id,
         ]);

@@ -1,6 +1,6 @@
-# <img src="public/images/clinicflow-icon-logo.png" alt="ClinicFlow" width="32" height="32" style="vertical-align: middle; margin-right: 8px;" /> ClinicFlow
-
 <div align="center">
+
+# <img src="public/images/clinicflow-icon-logo.png" alt="ClinicFlow" width="32" height="32" style="vertical-align: middle; margin-right: 8px;" /> ClinicFlow
 
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -8,7 +8,7 @@
 ![Laravel Version](https://img.shields.io/badge/Laravel-12.x-red.svg)
 ![React Version](https://img.shields.io/badge/React-19.x-blue.svg)
 
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/aphaiboon/clinicflow)
+[![Tests](https://github.com/aphaiboon/clinicflow/actions/workflows/tests.yml/badge.svg)](https://github.com/aphaiboon/clinicflow/actions/workflows/tests.yml)
 [![Code Style](https://img.shields.io/badge/code%20style-Laravel%20Pint-orange.svg)](https://laravel.com/docs/pint)
 
 </div>

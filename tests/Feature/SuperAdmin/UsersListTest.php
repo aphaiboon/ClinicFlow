@@ -20,7 +20,7 @@ it('super admin can view users list', function () {
     $response->assertOk();
     $response->assertInertia(fn (Assert $page) => $page
         ->component('SuperAdmin/UsersList')
-        ->has('users.data', 5)
+        ->has('users.data', 6) // 5 users + 1 superAdmin
     );
 });
 
@@ -36,9 +36,11 @@ it('users list shows user details', function () {
 
     $response->assertInertia(fn (Assert $page) => $page
         ->component('SuperAdmin/UsersList')
-        ->has('users.data.0', fn (Assert $userData) => $userData
-            ->where('name', 'John Doe')
-            ->where('email', 'john@example.com')
-        )
+        ->has('users.data')
+        ->where('users.data', function ($users) {
+            return collect($users)->contains(function ($u) {
+                return $u['name'] === 'John Doe' && $u['email'] === 'john@example.com';
+            });
+        })
     );
 });

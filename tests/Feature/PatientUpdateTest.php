@@ -1,15 +1,28 @@
 <?php
 
+use App\Enums\OrganizationRole;
 use App\Enums\UserRole;
+use App\Models\Organization;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->organization = Organization::factory()->create();
+    $this->user = User::factory()->create([
+        'role' => UserRole::User,
+        'current_organization_id' => $this->organization->id,
+    ]);
+    $this->organization->users()->attach($this->user->id, [
+        'role' => OrganizationRole::Receptionist->value,
+        'joined_at' => now(),
+    ]);
+});
+
 it('completes full patient update flow with audit logging', function () {
-    $user = User::factory()->create(['role' => UserRole::Receptionist]);
-    $patient = Patient::factory()->create([
+    $patient = Patient::factory()->for($this->organization)->create([
         'first_name' => 'John',
         'last_name' => 'Doe',
         'email' => 'john@example.com',
@@ -17,7 +30,7 @@ it('completes full patient update flow with audit logging', function () {
 
     $originalEmail = $patient->email;
 
-    $response = $this->actingAs($user)
+    $response = $this->actingAs($this->user)
         ->get("/patients/{$patient->id}/edit");
 
     $response->assertSuccessful();
@@ -35,7 +48,7 @@ it('completes full patient update flow with audit logging', function () {
         'postal_code' => $patient->postal_code,
     ];
 
-    $response = $this->actingAs($user)
+    $response = $this->actingAs($this->user)
         ->put("/patients/{$patient->id}", $updateData);
 
     $response->assertRedirect();
@@ -47,6 +60,7 @@ it('completes full patient update flow with audit logging', function () {
         ->and($patient->phone)->toBe('555-0200');
 
     $this->assertDatabaseHas('audit_logs', [
+        'organization_id' => $this->organization->id,
         'action' => 'update',
         'resource_type' => 'Patient',
         'resource_id' => $patient->id,
@@ -54,8 +68,7 @@ it('completes full patient update flow with audit logging', function () {
 });
 
 it('tracks changes correctly in audit log during patient update', function () {
-    $user = User::factory()->create(['role' => UserRole::Receptionist]);
-    $patient = Patient::factory()->create([
+    $patient = Patient::factory()->for($this->organization)->create([
         'first_name' => 'Jane',
         'last_name' => 'Doe',
     ]);
@@ -72,7 +85,7 @@ it('tracks changes correctly in audit log during patient update', function () {
         'postal_code' => $patient->postal_code,
     ];
 
-    $this->actingAs($user)
+    $this->actingAs($this->user)
         ->put("/patients/{$patient->id}", $updateData);
 
     $auditLog = \App\Models\AuditLog::where('resource_type', 'Patient')
@@ -82,5 +95,6 @@ it('tracks changes correctly in audit log during patient update', function () {
         ->first();
 
     expect($auditLog)->not->toBeNull()
-        ->and($auditLog->changes)->toHaveKey('after');
+        ->and($auditLog->changes)->toHaveKey('after')
+        ->and($auditLog->organization_id)->toBe($this->organization->id);
 });

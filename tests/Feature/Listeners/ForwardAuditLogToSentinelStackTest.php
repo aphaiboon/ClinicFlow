@@ -4,6 +4,7 @@ use App\Enums\AuditAction;
 use App\Events\AuditLogCreated;
 use App\Listeners\ForwardAuditLogToSentinelStack;
 use App\Models\AuditLog;
+use App\Models\Organization;
 use App\Models\User;
 use App\Services\Integration\EventEnvelopeBuilder;
 use App\Services\Integration\SentinelStackClientInterface;
@@ -15,6 +16,7 @@ use function Pest\Laravel\mock;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->organization = Organization::factory()->create();
     $this->envelopeBuilder = mock(EventEnvelopeBuilder::class);
     $this->client = mock(SentinelStackClientInterface::class);
     $this->listener = new ForwardAuditLogToSentinelStack($this->client, $this->envelopeBuilder);
@@ -27,7 +29,7 @@ beforeEach(function () {
 
 it('forwards audit log to SentinelStack as audit_log event type', function () {
     $user = User::factory()->create();
-    $auditLog = AuditLog::factory()->create([
+    $auditLog = AuditLog::factory()->for($this->organization)->create([
         'user_id' => $user->id,
         'action' => AuditAction::Create,
         'resource_type' => 'Patient',
@@ -52,7 +54,7 @@ it('forwards audit log to SentinelStack as audit_log event type', function () {
                 && $payload['action'] === 'create'
                 && $payload['resource_type'] === 'Patient'
                 && $payload['resource_id'] === 123;
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -65,7 +67,7 @@ it('forwards audit log to SentinelStack as audit_log event type', function () {
 
 it('includes compliance-ready format (who, what, when, where, why)', function () {
     $user = User::factory()->create(['email' => 'user@example.com']);
-    $auditLog = AuditLog::factory()->create([
+    $auditLog = AuditLog::factory()->for($this->organization)->create([
         'user_id' => $user->id,
         'action' => AuditAction::Update,
         'resource_type' => 'Appointment',
@@ -80,7 +82,7 @@ it('includes compliance-ready format (who, what, when, where, why)', function ()
 
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
         ->once()
-        ->with('audit_log', \Mockery::capture($capturedPayload))
+        ->with('audit_log', \Mockery::capture($capturedPayload), $this->organization->id)
         ->andReturn(['event_type' => 'audit_log', 'payload' => []]);
 
     $this->client->shouldReceive('ingestEvent')
@@ -102,7 +104,7 @@ it('includes compliance-ready format (who, what, when, where, why)', function ()
 });
 
 it('handles audit log without changes', function () {
-    $auditLog = AuditLog::factory()->create([
+    $auditLog = AuditLog::factory()->for($this->organization)->create([
         'action' => AuditAction::Read,
         'changes' => null,
     ]);
@@ -110,7 +112,7 @@ it('handles audit log without changes', function () {
 
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
         ->once()
-        ->with('audit_log', \Mockery::type('array'))
+        ->with('audit_log', \Mockery::type('array'), $this->organization->id)
         ->andReturn(['event_type' => 'audit_log', 'payload' => []]);
 
     $this->client->shouldReceive('ingestEvent')
