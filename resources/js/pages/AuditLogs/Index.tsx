@@ -47,16 +47,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
     const [resourceType, setResourceType] = useState(
-        filters?.resource_type || '',
+        filters?.resource_type || 'all',
     );
-    const [action, setAction] = useState(filters?.action || '');
+    const [action, setAction] = useState(filters?.action || 'all');
     const [dateFrom, setDateFrom] = useState(filters?.date_from || '');
     const [dateTo, setDateTo] = useState(filters?.date_to || '');
 
     const applyFilters = useCallback(() => {
         const params: Record<string, string> = {};
-        if (resourceType) params.resource_type = resourceType;
-        if (action) params.action = action;
+        if (resourceType && resourceType !== 'all') params.resource_type = resourceType;
+        if (action && action !== 'all') params.action = action;
         if (dateFrom) params.date_from = dateFrom;
         if (dateTo) params.date_to = dateTo;
 
@@ -93,7 +93,7 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
                                         <SelectValue placeholder="All types" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">
+                                        <SelectItem value="all">
                                             All Types
                                         </SelectItem>
                                         <SelectItem value="App\\Models\\Patient">
@@ -119,7 +119,7 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
                                         <SelectValue placeholder="All actions" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">
+                                        <SelectItem value="all">
                                             All Actions
                                         </SelectItem>
                                         <SelectItem value="create">

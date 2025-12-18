@@ -47,19 +47,19 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Index({
     appointments,
     filters,
-    clinicians,
+    clinicians = [],
 }: AppointmentsIndexProps) {
-    const [statusFilter, setStatusFilter] = useState(filters?.status || '');
+    const [statusFilter, setStatusFilter] = useState(filters?.status || 'all');
     const [dateFilter, setDateFilter] = useState(filters?.date || '');
     const [clinicianFilter, setClinicianFilter] = useState(
-        filters?.clinician_id || '',
+        filters?.clinician_id || 'all',
     );
 
     const applyFilters = () => {
         const params: Record<string, string> = {};
-        if (statusFilter) params.status = statusFilter;
+        if (statusFilter && statusFilter !== 'all') params.status = statusFilter;
         if (dateFilter) params.date = dateFilter;
-        if (clinicianFilter) params.clinician_id = clinicianFilter;
+        if (clinicianFilter && clinicianFilter !== 'all') params.clinician_id = clinicianFilter;
 
         router.get(index().url, params, { preserveState: true });
     };
@@ -104,7 +104,7 @@ export default function Index({
                                         <SelectValue placeholder="All statuses" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">
+                                        <SelectItem value="all">
                                             All Statuses
                                         </SelectItem>
                                         <SelectItem value="scheduled">
@@ -151,7 +151,7 @@ export default function Index({
                                         <SelectValue placeholder="All clinicians" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">
+                                        <SelectItem value="all">
                                             All Clinicians
                                         </SelectItem>
                                         {clinicians.map((clinician) => (

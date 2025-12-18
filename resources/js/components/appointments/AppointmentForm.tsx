@@ -60,7 +60,12 @@ export function AppointmentForm({
     return (
         <>
             {formErrors?.error && <AlertError errors={[formErrors.error]} />}
-            <Form {...route.form()} className="space-y-6">
+            {(() => {
+                const formProps = 'form' in route && typeof route.form === 'function' 
+                    ? route.form() 
+                    : { action: route.url, method: route.method };
+                return (
+                    <Form {...formProps} className="space-y-6">
                 {({ processing: formProcessing, errors }) => (
                     <>
                         <input
@@ -264,7 +269,9 @@ export function AppointmentForm({
                         </div>
                     </>
                 )}
-            </Form>
+                    </Form>
+                );
+            })()}
         </>
     );
 }

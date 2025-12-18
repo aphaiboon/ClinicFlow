@@ -27,8 +27,12 @@ export function PatientForm({
 }: PatientFormProps) {
     const [gender, setGender] = useState(patient?.gender || '');
 
+    const formProps = 'form' in route && typeof route.form === 'function' 
+        ? route.form() 
+        : { action: route.url, method: route.method };
+
     return (
-        <Form {...route.form()} className="space-y-6">
+        <Form {...formProps} className="space-y-6">
             {({ processing: formProcessing, errors }) => (
                 <>
                     <input type="hidden" name="gender" value={gender} />
