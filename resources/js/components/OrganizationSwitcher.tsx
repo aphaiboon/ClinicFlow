@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { usePage } from '@inertiajs/react';
 import { type SharedData } from '@/types';
-import { switchOrganization } from '@/routes/organizations';
+import * as organizationRoutes from '@/routes/organizations';
 
 interface Organization {
     id: number;
@@ -29,7 +29,7 @@ export default function OrganizationSwitcher({ organizations = [], currentOrgani
     }
 
     const handleSwitch = (organizationId: number) => {
-        router.post(switchOrganization({ organization: organizationId }).url, {}, {
+        router.post(organizationRoutes.switch({ organization: organizationId }).url, {}, {
             preserveScroll: true,
             preserveState: false,
         });
