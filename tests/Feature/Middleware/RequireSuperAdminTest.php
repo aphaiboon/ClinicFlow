@@ -13,20 +13,20 @@ beforeEach(function () {
 
 it('allows super admin to access super admin routes', function () {
     $response = $this->actingAs($this->superAdmin)
-        ->get('/super-admin');
+        ->get(route('super-admin.dashboard'));
 
     $response->assertStatus(200);
 });
 
 it('denies regular user access to super admin routes', function () {
     $response = $this->actingAs($this->regularUser)
-        ->get('/super-admin');
+        ->get(route('super-admin.dashboard'));
 
     $response->assertForbidden();
 });
 
 it('redirects unauthenticated users to login', function () {
-    $response = $this->get('/super-admin');
+    $response = $this->get(route('super-admin.dashboard'));
 
-    $response->assertRedirect('/login');
+    $response->assertRedirect(route('login'));
 });
