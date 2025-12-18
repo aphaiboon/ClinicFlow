@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Support\Facades\Event;
 use Laravel\Fortify\Features;
 
 test('unauthenticated users can visit the welcome page', function () {
@@ -69,3 +68,42 @@ test('welcome page login button links to login route', function () {
     );
 });
 
+test('welcome page register button has correct styling and is visible', function () {
+    if (! Features::enabled(Features::registration())) {
+        $this->markTestSkipped('Registration is not enabled.');
+    }
+
+    $response = $this->get(route('home'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('welcome')
+        ->where('canRegister', true)
+    );
+});
+
+test('welcome page does not display duplicate logo in hero section', function () {
+    $response = $this->get(route('home'));
+
+    $response->assertOk();
+    $html = $response->getContent();
+
+    preg_match_all('/clinicflow-icon-logo\.png/', $html, $matches);
+
+    expect(count($matches[0]))->toBeLessThanOrEqual(1)
+        ->and($html)->not->toContain('sm:h-32 sm:w-32');
+});
+
+test('welcome page displays concise hero section without duplicate heading', function () {
+    $response = $this->get(route('home'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('welcome')
+    );
+
+    $html = $response->getContent();
+
+    expect($html)->not->toContain('text-7xl bg-gradient-to-r from-[#323d47] to-[#1bc3bb]')
+        ->and($html)->toContain('Streamline Your Clinic Operations');
+});
