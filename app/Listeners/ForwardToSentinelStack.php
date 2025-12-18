@@ -61,4 +61,13 @@ class ForwardToSentinelStack implements ShouldQueue
 
         $this->sentinelStackClient->ingestEvent($envelope);
     }
+
+    private function getOrganizationIdFromEvent(PatientCreated|PatientUpdated|AppointmentScheduled|AppointmentUpdated|AppointmentCancelled|RoomAssigned $event): ?int
+    {
+        return match (true) {
+            $event instanceof PatientCreated, $event instanceof PatientUpdated => $event->patient->organization_id,
+            $event instanceof AppointmentScheduled, $event instanceof AppointmentUpdated, $event instanceof AppointmentCancelled, $event instanceof RoomAssigned => $event->appointment->organization_id,
+            default => null,
+        };
+    }
 }

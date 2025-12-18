@@ -25,7 +25,7 @@ class EventEnvelopeBuilder
                 'region' => Config::get('sentinelstack.region', 'unknown'),
             ],
             'environment' => Config::get('sentinelstack.environment', 'development'),
-            'tenant_id' => Config::get('sentinelstack.tenant_id'),
+            'tenant_id' => $this->resolveTenantId($payload),
             'actor' => [
                 'user_id' => Auth::id() ? (string) Auth::id() : null,
                 'user_email' => Auth::user()?->email,

@@ -47,7 +47,8 @@ class ForwardAccessControlToSentinelStack implements ShouldQueue
             ],
         };
 
-        $envelope = $this->envelopeBuilder->buildEnvelope('access_control', $payload);
+        $organizationId = auth()->user()?->current_organization_id;
+        $envelope = $this->envelopeBuilder->buildEnvelope('access_control', $payload, $organizationId);
 
         $this->sentinelStackClient->ingestEvent($envelope);
     }

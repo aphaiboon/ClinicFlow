@@ -44,7 +44,8 @@ class ForwardAuditLogToSentinelStack implements ShouldQueue
             'changes' => $auditLog->changes,
         ];
 
-        $envelope = $this->envelopeBuilder->buildEnvelope('audit_log', $payload);
+        $organizationId = $event->auditLog->organization_id;
+        $envelope = $this->envelopeBuilder->buildEnvelope('audit_log', $payload, $organizationId);
 
         $this->sentinelStackClient->ingestEvent($envelope);
     }
