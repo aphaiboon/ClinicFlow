@@ -107,14 +107,14 @@ test('organization registration redirects to dashboard after registration', func
 });
 
 test('organization registration validates required organization fields', function () {
-    $userData = [
-        'name' => 'John Doe',
-        'email' => 'john@example.com',
+    $data = [
+        'user_name' => 'John Doe',
+        'user_email' => 'john@example.com',
         'password' => 'password123',
         'password_confirmation' => 'password123',
     ];
 
-    $response = $this->post(route('organization.register.store'), $userData);
+    $response = $this->post(route('organization.register.store'), $data);
 
     $response->assertSessionHasErrors('name');
 });
