@@ -1,8 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
-import { AppSidebarLayout } from './app/app-sidebar-layout';
-import AppHeader from '@/components/app-header';
-import { dashboard } from '@/routes';
+import AppSidebarLayout from './app/app-sidebar-layout';
 import { dashboard as superAdminDashboard } from '@/routes/super-admin';
 
 interface SuperAdminLayoutProps {
