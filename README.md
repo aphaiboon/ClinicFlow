@@ -1,76 +1,95 @@
+<div align="center">
+  <img src="public/images/clinicflow-text-logo.png" alt="ClinicFlow" width="200"/>
+</div>
+
 # ClinicFlow
 
 <div align="center">
-  <img src="public/images/clinicflow-text-logo.png" alt="ClinicFlow" width="300"/>
-  
-  <p>Clinic management system for healthcare staff</p>
+
+![Status](https://img.shields.io/badge/status-active-success.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![PHP Version](https://img.shields.io/badge/PHP-8.3.16-blue.svg)
+![Laravel Version](https://img.shields.io/badge/Laravel-12.x-red.svg)
+![React Version](https://img.shields.io/badge/React-19.x-blue.svg)
+
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/aphaiboon/clinicflow)
+[![Code Style](https://img.shields.io/badge/code%20style-Laravel%20Pint-orange.svg)](https://laravel.com/docs/pint)
+
 </div>
 
-ClinicFlow is a demonstration outpatient clinic application showcasing integration with [SentinelStack](https://github.com/aphaiboon/sentinelstack) for operational visibility, security enforcement, and compliance-ready audit trails. Built exclusively with synthetic data for portfolio and educational purposes.
+ClinicFlow is a demonstration outpatient clinic application designed to showcase integration with [SentinelStack](https://github.com/aphaiboon/sentinelstack), a healthcare-ready cloud platform for system monitoring, security controls, and immutable audit trails. It simulates core clinic operations using synthetic data exclusively and is not intended for production healthcare use.
 
 ## Features
 
-- Patient registration and management
-- Appointment scheduling and management
-- Exam room assignment and tracking
-- Role-based access control
-- Immutable audit logging
-- SentinelStack integration for monitoring and compliance
+- **Multi-Tenant Organization Support** - Organizations with role-based access control
+- **Patient Management** - Registration, search, and profile management
+- **Appointment Scheduling** - Schedule, update, and cancel appointments
+- **Exam Room Management** - Track and assign exam rooms
+- **Audit Logging** - Comprehensive activity tracking
+- **SentinelStack Integration** - Domain event-driven observability and compliance
 
-## Tech Stack
+## Technical Stack
 
-- **Backend:** Laravel 12 (PHP 8.3)
-- **Frontend:** React 19 + Inertia.js v2
-- **Styling:** Tailwind CSS v4
-- **Database:** SQLite (dev) / PostgreSQL (prod)
-- **Auth:** Laravel Fortify with 2FA
-- **Testing:** Pest PHP v4
+- **Backend**: Laravel 12 (PHP 8.3)
+- **Frontend**: React 19 with Inertia.js v2
+- **Styling**: Tailwind CSS v4
+- **Database**: SQLite (development) / PostgreSQL (production-ready)
+- **Authentication**: Laravel Fortify
+- **Testing**: Pest PHP v4
+- **Code Quality**: Laravel Pint, ESLint, Prettier
 
 ## Quick Start
 
-```bash
-# Clone repository
-git clone https://github.com/yourusername/clinicflow.git
-cd clinicflow
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/aphaiboon/clinicflow.git && cd clinicflow
+   ```
 
-# Install dependencies
-composer install
-npm install
+2. Install dependencies:
+   ```bash
+   composer install && npm install
+   ```
 
-# Setup environment
-cp .env.example .env
-php artisan key:generate
+3. Set up environment:
+   ```bash
+   cp .env.example .env && php artisan key:generate
+   ```
 
-# Run migrations
-php artisan migrate
+4. Run migrations:
+   ```bash
+   php artisan migrate
+   ```
 
-# Build assets
-npm run build
+5. Build frontend assets:
+   ```bash
+   npm run build
+   ```
 
-# Start development server
-composer run dev
-```
+6. Start development server:
+   ```bash
+   composer run dev
+   ```
 
-Visit `http://localhost:8000` or `http://clinicflow.test` (if using Laravel Herd).
+The application will be available at `http://localhost:8000`.
 
 ## Documentation
 
-- [Architecture](docs/architecture.md) - System architecture and components
-- [Domain Model](docs/domain-model.md) - Entity relationships
-- [Data Flow](docs/data-flow.md) - Operational sequences
-- [Compliance & Security](docs/compliance-security.md) - HIPAA, HL7 FHIR considerations
-- [SentinelStack Integration](docs/integration-sentinelstack.md) - Integration points and event schemas
-- [Setup Guide](docs/setup.md) - Detailed installation and configuration
-- [Development Guide](docs/development-guide.md) - Coding standards and contribution guidelines
+- [Architecture](docs/architecture.md) - System architecture and design patterns
+- [Domain Model](docs/domain-model.md) - Domain entities and relationships
+- [Data Flow](docs/data-flow.md) - Data flow diagrams and processes
+- [Compliance & Security](docs/compliance-security.md) - HIPAA considerations and security measures
+- [SentinelStack Integration](docs/integration-sentinelstack.md) - Integration guide and event structure
+- [Setup Guide](docs/setup.md) - Detailed setup instructions
+- [Development Guide](docs/development-guide.md) - Development workflow and guidelines
 
 ## Contributing
 
-Contributions are welcome! Please review the [Development Guide](docs/development-guide.md) for coding standards, testing requirements, and contribution guidelines.
+Contributions are welcome. Please review the [Development Guide](docs/development-guide.md) for coding standards and contribution guidelines.
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Related Projects
 
-- [SentinelStack](https://github.com/aphaiboon/sentinelstack) - Healthcare-ready monitoring and audit platform
+- [SentinelStack](https://github.com/aphaiboon/sentinelstack) - Healthcare-ready observability platform
