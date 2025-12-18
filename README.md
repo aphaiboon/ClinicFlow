@@ -1,8 +1,4 @@
-<div align="center">
-  <img src="public/images/clinicflow-icon-logo.png" alt="ClinicFlow" width="200"/>
-</div>
-
-# ClinicFlow
+# <img src="public/images/clinicflow-icon-logo.png" alt="ClinicFlow" width="32" height="32" style="vertical-align: middle; margin-right: 8px;" /> ClinicFlow
 
 <div align="center">
 

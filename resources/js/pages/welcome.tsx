@@ -23,28 +23,28 @@ export default function Welcome({
             title: 'Patient Management',
             description:
                 'Register and manage patient records with comprehensive demographic information',
-            color: 'text-[#1bc3bb]',
+            color: 'text-[var(--clinicflow-teal)]',
         },
         {
             icon: Calendar,
             title: 'Appointment Scheduling',
             description:
                 'Schedule, reschedule, and manage patient appointments efficiently',
-            color: 'text-[#F1903C]',
+            color: 'text-[var(--clinicflow-orange)]',
         },
         {
             icon: Building,
             title: 'Exam Room Management',
             description:
                 'Assign patients to exam rooms and track room availability',
-            color: 'text-[#806954]',
+            color: 'text-[var(--clinicflow-brown)]',
         },
         {
             icon: Activity,
             title: 'Audit & Compliance',
             description:
                 'Complete audit trails and compliance-ready logging for healthcare operations',
-            color: 'text-[#F2B064]',
+            color: 'text-[var(--clinicflow-light-orange)]',
         },
     ];
 
@@ -74,7 +74,7 @@ export default function Welcome({
                                 <Button
                                     asChild
                                     size="sm"
-                                    className="bg-[#F1903C] text-white hover:bg-[#F1903C]/90"
+                                    className="bg-[var(--clinicflow-orange)] text-white hover:bg-[var(--clinicflow-orange)]/90"
                                 >
                                     <Link href={register()}>Register</Link>
                                 </Button>
@@ -99,7 +99,7 @@ export default function Welcome({
                                     <Button
                                         asChild
                                         size="lg"
-                                        className="bg-[#1bc3bb] px-8 text-white hover:bg-[#1bc3bb]/90"
+                                        className="bg-[var(--clinicflow-teal)] px-8 text-white hover:bg-[var(--clinicflow-teal)]/90"
                                     >
                                         <Link href={login()}>Sign In</Link>
                                     </Button>
@@ -108,7 +108,7 @@ export default function Welcome({
                                             asChild
                                             size="lg"
                                             variant="outline"
-                                            className="border-2 border-[#323d47] px-8 text-[#323d47] hover:bg-[#323d47] hover:text-white"
+                                            className="border-2 border-[var(--clinicflow-dark)] px-8 text-[var(--clinicflow-dark)] hover:bg-[var(--clinicflow-dark)] hover:text-white"
                                         >
                                             <Link href={register()}>
                                                 Create Account
@@ -124,7 +124,7 @@ export default function Welcome({
                                     return (
                                         <Card
                                             key={feature.title}
-                                            className="border-2 border-border transition-all duration-300 hover:-translate-y-1 hover:border-[#1bc3bb]/30 hover:shadow-lg"
+                                            className="border-2 border-border transition-all duration-300 hover:-translate-y-1 hover:border-[var(--clinicflow-teal)]/30 hover:shadow-lg"
                                         >
                                             <CardContent className="p-6 text-center">
                                                 <div className="mb-4 flex justify-center">
