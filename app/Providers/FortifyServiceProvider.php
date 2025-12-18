@@ -56,15 +56,33 @@ class FortifyServiceProvider extends ServiceProvider
 
             if (app()->environment(['local', 'staging'])) {
                 $props['demoUsers'] = \App\Models\User::query()
-                    ->select('id', 'name', 'email', 'role')
+                    ->with(['organizations' => function ($query) {
+                        $query->select('organizations.id', 'organizations.name');
+                    }])
+                    ->select('id', 'name', 'email', 'role', 'current_organization_id')
                     ->orderBy('name')
                     ->get()
-                    ->map(fn ($user) => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'role' => $user->role->value,
-                    ])
+                    ->map(function ($user) {
+                        $orgRole = null;
+                        $orgName = null;
+                        if ($user->current_organization_id) {
+                            $organization = $user->organizations
+                                ->firstWhere('id', $user->current_organization_id);
+                            if ($organization) {
+                                $orgRole = $organization->pivot->role ?? null;
+                                $orgName = $organization->name ?? null;
+                            }
+                        }
+
+                        return [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            'role' => $user->role->value,
+                            'organizationRole' => $orgRole,
+                            'organizationName' => $orgName,
+                        ];
+                    })
                     ->toArray();
             }
 
