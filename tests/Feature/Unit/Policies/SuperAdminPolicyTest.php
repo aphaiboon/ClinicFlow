@@ -11,26 +11,32 @@ beforeEach(function () {
     $this->regularUser = User::factory()->create(['role' => UserRole::User]);
 });
 
-it('allows super admin to view any organization', function () {
-    expect($this->superAdmin->can('viewAny', \App\Models\Organization::class))->toBeTrue();
+it('allows super admin to view any organizations', function () {
+    $policy = new \App\Policies\SuperAdminPolicy;
+    expect($policy->viewAnyOrganizations($this->superAdmin))->toBeTrue();
 });
 
-it('prevents regular user from viewing any organization', function () {
-    expect($this->regularUser->can('viewAny', \App\Models\Organization::class))->toBeFalse();
+it('prevents regular user from viewing any organizations', function () {
+    $policy = new \App\Policies\SuperAdminPolicy;
+    expect($policy->viewAnyOrganizations($this->regularUser))->toBeFalse();
 });
 
-it('allows super admin to view any user', function () {
-    expect($this->superAdmin->can('viewAny', User::class))->toBeTrue();
+it('allows super admin to view any users', function () {
+    $policy = new \App\Policies\SuperAdminPolicy;
+    expect($policy->viewAnyUsers($this->superAdmin))->toBeTrue();
 });
 
-it('prevents regular user from viewing any user', function () {
-    expect($this->regularUser->can('viewAny', User::class))->toBeFalse();
+it('prevents regular user from viewing any users', function () {
+    $policy = new \App\Policies\SuperAdminPolicy;
+    expect($policy->viewAnyUsers($this->regularUser))->toBeFalse();
 });
 
 it('allows super admin to manage organizations', function () {
-    expect($this->superAdmin->can('manage', \App\Models\Organization::class))->toBeTrue();
+    $policy = new \App\Policies\SuperAdminPolicy;
+    expect($policy->manageOrganizations($this->superAdmin))->toBeTrue();
 });
 
 it('prevents regular user from managing organizations', function () {
-    expect($this->regularUser->can('manage', \App\Models\Organization::class))->toBeFalse();
+    $policy = new \App\Policies\SuperAdminPolicy;
+    expect($policy->manageOrganizations($this->regularUser))->toBeFalse();
 });
