@@ -10,7 +10,6 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\mock;
 
@@ -33,7 +32,7 @@ it('maps Login event to access_control with correct event_subtype', function () 
         'email' => 'test@example.com',
         'current_organization_id' => $this->organization->id,
     ]);
-    Auth::login($user);
+    $this->actingAs($user);
     $event = new Login('web', $user, false);
 
     $expectedEnvelope = [
@@ -69,7 +68,7 @@ it('maps Logout event to access_control with correct event_subtype', function ()
         'email' => 'test@example.com',
         'current_organization_id' => $this->organization->id,
     ]);
-    Auth::login($user);
+    $this->actingAs($user);
     $event = new Logout('web', $user);
 
     $expectedEnvelope = [
@@ -171,7 +170,7 @@ it('handles Failed event without email in credentials', function () {
 
 it('includes login_method in Login event payload', function () {
     $user = User::factory()->create(['current_organization_id' => $this->organization->id]);
-    Auth::login($user);
+    $this->actingAs($user);
     $event = new Login('web', $user, false);
 
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
@@ -191,7 +190,7 @@ it('includes login_method in Login event payload', function () {
 
 it('uses envelope builder to wrap payloads', function () {
     $user = User::factory()->create(['current_organization_id' => $this->organization->id]);
-    Auth::login($user);
+    $this->actingAs($user);
     $event = new Login('web', $user, false);
 
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
