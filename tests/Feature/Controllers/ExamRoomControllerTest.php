@@ -8,9 +8,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['role' => UserRole::Admin]);
-    $this->receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $this->clinician = User::factory()->create(['role' => UserRole::Clinician]);
+    $this->organization = \App\Models\Organization::factory()->create();
+    $this->admin = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($this->admin->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($this->receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($this->clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
 });
 
 it('requires authentication to view exam rooms index', function () {
@@ -20,7 +24,7 @@ it('requires authentication to view exam rooms index', function () {
 });
 
 it('displays exam rooms index for authenticated users', function () {
-    ExamRoom::factory()->count(5)->create();
+    ExamRoom::factory()->for($this->organization)->count(5)->create();
 
     $response = $this->actingAs($this->receptionist)->get('/exam-rooms');
 
@@ -28,7 +32,7 @@ it('displays exam rooms index for authenticated users', function () {
 });
 
 it('allows admin to view exam rooms index', function () {
-    ExamRoom::factory()->count(3)->create();
+    ExamRoom::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->admin)->get('/exam-rooms');
 
@@ -36,7 +40,7 @@ it('allows admin to view exam rooms index', function () {
 });
 
 it('allows receptionist to view exam rooms index', function () {
-    ExamRoom::factory()->count(3)->create();
+    ExamRoom::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->receptionist)->get('/exam-rooms');
 
@@ -44,7 +48,7 @@ it('allows receptionist to view exam rooms index', function () {
 });
 
 it('allows clinician to view exam rooms index', function () {
-    ExamRoom::factory()->count(3)->create();
+    ExamRoom::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->clinician)->get('/exam-rooms');
 
@@ -98,7 +102,7 @@ it('validates required fields when creating exam room', function () {
 });
 
 it('displays exam room details', function () {
-    $room = ExamRoom::factory()->create();
+    $room = ExamRoom::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->receptionist)->get("/exam-rooms/{$room->id}");
 
@@ -106,7 +110,7 @@ it('displays exam room details', function () {
 });
 
 it('allows admin to update an exam room', function () {
-    $room = ExamRoom::factory()->create(['name' => 'Original Name']);
+    $room = ExamRoom::factory()->for($this->organization)->create(['name' => 'Original Name']);
 
     $response = $this->actingAs($this->admin)
         ->put("/exam-rooms/{$room->id}", ['name' => 'Updated Name']);
@@ -116,7 +120,7 @@ it('allows admin to update an exam room', function () {
 });
 
 it('prevents non-admin from updating exam rooms', function () {
-    $room = ExamRoom::factory()->create();
+    $room = ExamRoom::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->receptionist)
         ->put("/exam-rooms/{$room->id}", ['name' => 'Updated Name']);
@@ -125,7 +129,7 @@ it('prevents non-admin from updating exam rooms', function () {
 });
 
 it('allows admin to activate an exam room', function () {
-    $room = ExamRoom::factory()->create(['is_active' => false]);
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => false]);
 
     $response = $this->actingAs($this->admin)
         ->post("/exam-rooms/{$room->id}/activate");
@@ -135,7 +139,7 @@ it('allows admin to activate an exam room', function () {
 });
 
 it('prevents non-admin from activating exam rooms', function () {
-    $room = ExamRoom::factory()->create(['is_active' => false]);
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => false]);
 
     $response = $this->actingAs($this->receptionist)
         ->post("/exam-rooms/{$room->id}/activate");
@@ -144,7 +148,7 @@ it('prevents non-admin from activating exam rooms', function () {
 });
 
 it('allows admin to deactivate an exam room', function () {
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
 
     $response = $this->actingAs($this->admin)
         ->post("/exam-rooms/{$room->id}/deactivate");
@@ -154,7 +158,7 @@ it('allows admin to deactivate an exam room', function () {
 });
 
 it('prevents non-admin from deactivating exam rooms', function () {
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
 
     $response = $this->actingAs($this->receptionist)
         ->post("/exam-rooms/{$room->id}/deactivate");

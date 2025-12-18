@@ -10,11 +10,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('completes full appointment cancellation flow', function () {
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient = Patient::factory()->create();
+    $organization = \App\Models\Organization::factory()->create();
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $patient = Patient::factory()->for($organization)->create();
 
-    $appointment = Appointment::factory()->create([
+    $appointment = Appointment::factory()->for($organization)->create([
         'patient_id' => $patient->id,
         'user_id' => $clinician->id,
         'status' => AppointmentStatus::Scheduled,
@@ -46,11 +49,14 @@ it('completes full appointment cancellation flow', function () {
 });
 
 it('prevents cancelling non-scheduled appointments', function () {
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient = Patient::factory()->create();
+    $organization = \App\Models\Organization::factory()->create();
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $patient = Patient::factory()->for($organization)->create();
 
-    $appointment = Appointment::factory()->create([
+    $appointment = Appointment::factory()->for($organization)->create([
         'patient_id' => $patient->id,
         'user_id' => $clinician->id,
         'status' => AppointmentStatus::Completed,

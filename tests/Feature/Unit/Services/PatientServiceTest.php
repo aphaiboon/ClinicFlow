@@ -90,7 +90,7 @@ it('creates audit log when patient is created', function () {
 });
 
 it('can update a patient', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
     $originalMrn = $patient->medical_record_number;
 
     $updateData = [
@@ -112,7 +112,7 @@ it('can update a patient', function () {
 });
 
 it('can find a patient by id', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
 
     $found = $this->service->findPatient($patient->id);
 
@@ -127,9 +127,9 @@ it('returns null when patient not found', function () {
 });
 
 it('can search patients by name', function () {
-    Patient::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
-    Patient::factory()->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
-    Patient::factory()->create(['first_name' => 'Bob', 'last_name' => 'Johnson']);
+    Patient::factory()->for($this->organization)->create(['first_name' => 'John', 'last_name' => 'Doe']);
+    Patient::factory()->for($this->organization)->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
+    Patient::factory()->for($this->organization)->create(['first_name' => 'Bob', 'last_name' => 'Johnson']);
 
     $results = $this->service->searchPatients('John');
 

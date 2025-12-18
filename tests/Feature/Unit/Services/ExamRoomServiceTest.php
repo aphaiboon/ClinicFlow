@@ -10,7 +10,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->user = User::factory()->create();
+    $this->organization = \App\Models\Organization::factory()->create();
+    $this->user = User::factory()->create(['current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($this->user->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
     $this->actingAs($this->user);
     $this->service = app(ExamRoomService::class);
 });
@@ -39,7 +41,7 @@ it('can create a room', function () {
 });
 
 it('can update a room', function () {
-    $room = ExamRoom::factory()->create();
+    $room = ExamRoom::factory()->for($this->organization)->create();
 
     $updateData = ['name' => 'Updated Room Name'];
     $updated = $this->service->updateRoom($room, $updateData);
@@ -54,7 +56,7 @@ it('can update a room', function () {
 });
 
 it('can activate a room', function () {
-    $room = ExamRoom::factory()->inactive()->create();
+    $room = ExamRoom::factory()->for($this->organization)->inactive()->create();
 
     $activated = $this->service->activateRoom($room);
 
@@ -62,7 +64,7 @@ it('can activate a room', function () {
 });
 
 it('can deactivate a room', function () {
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
 
     $deactivated = $this->service->deactivateRoom($room);
 
@@ -70,8 +72,8 @@ it('can deactivate a room', function () {
 });
 
 it('excludes inactive rooms from available rooms', function () {
-    $activeRoom = ExamRoom::factory()->create(['is_active' => true]);
-    $inactiveRoom = ExamRoom::factory()->create(['is_active' => false]);
+    $activeRoom = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
+    $inactiveRoom = ExamRoom::factory()->for($this->organization)->create(['is_active' => false]);
 
     $date = Carbon::now()->addDays(5);
     $time = Carbon::createFromTime(10, 0);
@@ -84,11 +86,11 @@ it('excludes inactive rooms from available rooms', function () {
 });
 
 it('excludes rooms with overlapping appointments', function () {
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
     $date = Carbon::now()->addDays(5);
     $startTime = Carbon::createFromTime(10, 0);
 
-    Appointment::factory()->create([
+    Appointment::factory()->for($this->organization)->create([
         'exam_room_id' => $room->id,
         'appointment_date' => $date->toDateString(),
         'appointment_time' => $startTime->toTimeString(),

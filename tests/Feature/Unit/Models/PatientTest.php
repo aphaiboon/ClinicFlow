@@ -4,9 +4,14 @@ use App\Enums\Gender;
 use App\Models\Appointment;
 use App\Models\Patient;
 
+beforeEach(function () {
+    $this->organization = \App\Models\Organization::factory()->create();
+});
+
 it('has fillable attributes', function () {
     $patient = new Patient;
     $fillable = [
+        'organization_id',
         'medical_record_number',
         'first_name',
         'last_name',
@@ -26,30 +31,30 @@ it('has fillable attributes', function () {
 });
 
 it('casts gender to enum', function () {
-    $patient = Patient::factory()->create(['gender' => Gender::Male]);
+    $patient = Patient::factory()->for($this->organization)->create(['gender' => Gender::Male]);
 
     expect($patient->gender)->toBe(Gender::Male)
         ->and($patient->getAttributes()['gender'])->toBe('male');
 });
 
 it('casts date_of_birth to date', function () {
-    $patient = Patient::factory()->create(['date_of_birth' => '1990-01-15']);
+    $patient = Patient::factory()->for($this->organization)->create(['date_of_birth' => '1990-01-15']);
 
     expect($patient->date_of_birth)->toBeInstanceOf(\Carbon\Carbon::class);
 });
 
 it('has appointments relationship', function () {
-    $patient = Patient::factory()->create();
-    Appointment::factory()->count(3)->create(['patient_id' => $patient->id]);
+    $patient = Patient::factory()->for($this->organization)->create();
+    Appointment::factory()->for($this->organization)->count(3)->create(['patient_id' => $patient->id]);
 
     expect($patient->appointments)->toHaveCount(3)
         ->and($patient->appointments->first())->toBeInstanceOf(Appointment::class);
 });
 
 it('can search patients by name', function () {
-    Patient::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
-    Patient::factory()->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
-    Patient::factory()->create(['first_name' => 'Bob', 'last_name' => 'Johnson']);
+    Patient::factory()->for($this->organization)->create(['first_name' => 'John', 'last_name' => 'Doe']);
+    Patient::factory()->for($this->organization)->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
+    Patient::factory()->for($this->organization)->create(['first_name' => 'Bob', 'last_name' => 'Johnson']);
 
     $results = Patient::searchByName('John')->get();
 

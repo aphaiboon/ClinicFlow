@@ -10,11 +10,18 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->organization = \App\Models\Organization::factory()->create();
+});
+
 it('enforces authorization for different user roles accessing patients', function () {
-    $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient = Patient::factory()->create();
+    $admin = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($admin->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $patient = Patient::factory()->for($this->organization)->create();
 
     $this->actingAs($admin)->get('/patients')->assertSuccessful();
     $this->actingAs($receptionist)->get('/patients')->assertSuccessful();
@@ -30,10 +37,13 @@ it('enforces authorization for different user roles accessing patients', functio
 });
 
 it('enforces authorization for different user roles accessing appointments', function () {
-    $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $appointment = Appointment::factory()->create(['user_id' => $clinician->id]);
+    $admin = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($admin->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['user_id' => $clinician->id]);
 
     $this->actingAs($admin)->get('/appointments')->assertSuccessful();
     $this->actingAs($receptionist)->get('/appointments')->assertSuccessful();
@@ -49,15 +59,17 @@ it('enforces authorization for different user roles accessing appointments', fun
 });
 
 it('enforces authorization for appointment cancellation by role', function () {
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $appointment = Appointment::factory()->create(['status' => \App\Enums\AppointmentStatus::Scheduled]);
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['status' => \App\Enums\AppointmentStatus::Scheduled]);
 
     $this->actingAs($receptionist)
         ->post("/appointments/{$appointment->id}/cancel", ['reason' => 'Test'])
         ->assertRedirect();
 
-    $appointment2 = Appointment::factory()->create(['status' => \App\Enums\AppointmentStatus::Scheduled]);
+    $appointment2 = Appointment::factory()->for($this->organization)->create(['status' => \App\Enums\AppointmentStatus::Scheduled]);
 
     $this->actingAs($clinician)
         ->post("/appointments/{$appointment2->id}/cancel", ['reason' => 'Test'])
@@ -65,10 +77,13 @@ it('enforces authorization for appointment cancellation by role', function () {
 });
 
 it('enforces admin-only access to audit logs', function () {
-    $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $auditLog = AuditLog::factory()->create();
+    $admin = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($admin->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $auditLog = AuditLog::factory()->for($this->organization)->create();
 
     $this->actingAs($admin)->get('/audit-logs')->assertSuccessful();
     $this->actingAs($receptionist)->get('/audit-logs')->assertForbidden();
@@ -80,10 +95,13 @@ it('enforces admin-only access to audit logs', function () {
 });
 
 it('enforces authorization for exam room management', function () {
-    $admin = User::factory()->create(['role' => UserRole::Admin]);
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $room = ExamRoom::factory()->create();
+    $admin = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($admin->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $room = ExamRoom::factory()->for($this->organization)->create();
 
     $this->actingAs($admin)->get('/exam-rooms')->assertSuccessful();
     $this->actingAs($receptionist)->get('/exam-rooms')->assertSuccessful();

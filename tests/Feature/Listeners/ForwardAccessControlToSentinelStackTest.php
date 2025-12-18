@@ -105,8 +105,8 @@ it('maps Failed event to access_control with correct event_subtype', function ()
         ->with('access_control', \Mockery::on(function ($payload) {
             return $payload['event_subtype'] === 'user.login_failed'
                 && $payload['attempted_email'] === 'test@example.com'
-                && !isset($payload['password'])
-                && !isset($payload['credentials'])
+                && ! isset($payload['password'])
+                && ! isset($payload['credentials'])
                 && isset($payload['ip_address'])
                 && isset($payload['user_agent'])
                 && isset($payload['reason']);
@@ -127,8 +127,8 @@ it('ensures password is never included in Failed event payload', function () {
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
         ->once()
         ->with('access_control', \Mockery::on(function ($payload) {
-            return !isset($payload['password'])
-                && !isset($payload['credentials']);
+            return ! isset($payload['password'])
+                && ! isset($payload['credentials']);
         }))
         ->andReturn(['event_type' => 'access_control', 'payload' => []]);
 
@@ -146,8 +146,8 @@ it('handles Failed event without email in credentials', function () {
         ->once()
         ->with('access_control', \Mockery::on(function ($payload) {
             return $payload['event_subtype'] === 'user.login_failed'
-                && (!isset($payload['attempted_email']) || $payload['attempted_email'] === null)
-                && !isset($payload['password']);
+                && (! isset($payload['attempted_email']) || $payload['attempted_email'] === null)
+                && ! isset($payload['password']);
         }))
         ->andReturn(['event_type' => 'access_control', 'payload' => []]);
 
@@ -199,4 +199,3 @@ it('uses envelope builder to wrap payloads', function () {
 
     $this->listener->handle($event);
 });
-

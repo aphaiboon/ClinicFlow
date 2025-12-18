@@ -13,11 +13,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->user = User::factory()->create();
+    $this->organization = \App\Models\Organization::factory()->create();
+    $this->user = User::factory()->create(['current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($this->user->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
     $this->actingAs($this->user);
     $this->service = app(AppointmentService::class);
-    $this->patient = Patient::factory()->create();
-    $this->clinician = User::factory()->create();
+    $this->patient = Patient::factory()->for($this->organization)->create();
+    $this->clinician = User::factory()->create(['current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($this->clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
 });
 
 it('can schedule an appointment', function () {
@@ -49,7 +52,7 @@ it('prevents scheduling overlapping appointments for same clinician', function (
     $date = Carbon::now()->addDays(5);
     $existingTime = Carbon::createFromTime(10, 0);
 
-    Appointment::factory()->create([
+    Appointment::factory()->for($this->organization)->create([
         'user_id' => $this->clinician->id,
         'appointment_date' => $date->toDateString(),
         'appointment_time' => $existingTime->format('H:i:s'),
@@ -97,7 +100,7 @@ it('allows non-overlapping appointments for same clinician', function () {
 });
 
 it('can update appointment status', function () {
-    $appointment = Appointment::factory()->create([
+    $appointment = Appointment::factory()->for($this->organization)->create([
         'status' => AppointmentStatus::Scheduled,
     ]);
 
@@ -116,7 +119,7 @@ it('can update appointment status', function () {
 });
 
 it('can cancel an appointment with reason', function () {
-    $appointment = Appointment::factory()->create([
+    $appointment = Appointment::factory()->for($this->organization)->create([
         'status' => AppointmentStatus::Scheduled,
     ]);
 
@@ -128,8 +131,8 @@ it('can cancel an appointment with reason', function () {
 });
 
 it('can assign room to appointment', function () {
-    $room = ExamRoom::factory()->create(['is_active' => true]);
-    $appointment = Appointment::factory()->create([
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
+    $appointment = Appointment::factory()->for($this->organization)->create([
         'exam_room_id' => null,
     ]);
 
@@ -145,19 +148,19 @@ it('can assign room to appointment', function () {
 });
 
 it('prevents assigning inactive room', function () {
-    $room = ExamRoom::factory()->inactive()->create();
-    $appointment = Appointment::factory()->create();
+    $room = ExamRoom::factory()->for($this->organization)->inactive()->create();
+    $appointment = Appointment::factory()->for($this->organization)->create();
 
     expect(fn () => $this->service->assignRoom($appointment, $room))
         ->toThrow(\RuntimeException::class, 'Room is not active');
 });
 
 it('prevents assigning room with conflicting appointment', function () {
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+    $room = ExamRoom::factory()->for($this->organization)->create(['is_active' => true]);
     $date = Carbon::now()->addDays(5);
     $existingTime = Carbon::createFromTime(10, 0);
 
-    Appointment::factory()->create([
+    Appointment::factory()->for($this->organization)->create([
         'exam_room_id' => $room->id,
         'appointment_date' => $date->toDateString(),
         'appointment_time' => $existingTime->format('H:i:s'),
@@ -166,7 +169,7 @@ it('prevents assigning room with conflicting appointment', function () {
     ]);
 
     $overlappingTime = $existingTime->copy()->addMinutes(15);
-    $appointment = Appointment::factory()->create([
+    $appointment = Appointment::factory()->for($this->organization)->create([
         'appointment_date' => $date->toDateString(),
         'appointment_time' => $overlappingTime->format('H:i:s'),
         'duration_minutes' => 30,
@@ -211,7 +214,7 @@ it('can exclude appointment from availability check', function () {
     $date = Carbon::now()->addDays(5);
     $time = Carbon::createFromTime(10, 0);
 
-    $existingAppointment = Appointment::factory()->create([
+    $existingAppointment = Appointment::factory()->for($this->organization)->create([
         'user_id' => $this->clinician->id,
         'appointment_date' => $date->toDateString(),
         'appointment_time' => $time->format('H:i:s'),

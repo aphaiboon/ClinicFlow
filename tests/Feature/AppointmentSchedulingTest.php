@@ -13,10 +13,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('completes full appointment scheduling flow', function () {
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient = Patient::factory()->create();
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+    $organization = \App\Models\Organization::factory()->create();
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $patient = Patient::factory()->for($organization)->create();
+    $room = ExamRoom::factory()->for($organization)->create(['is_active' => true]);
 
     $appointmentDate = Carbon::tomorrow();
     $appointmentTime = '10:00';
@@ -60,15 +63,18 @@ it('completes full appointment scheduling flow', function () {
 });
 
 it('prevents scheduling conflicting appointments for same clinician', function () {
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient1 = Patient::factory()->create();
-    $patient2 = Patient::factory()->create();
+    $organization = \App\Models\Organization::factory()->create();
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $organization->users()->attach($clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $patient1 = Patient::factory()->for($organization)->create();
+    $patient2 = Patient::factory()->for($organization)->create();
 
     $appointmentDate = Carbon::tomorrow();
     $appointmentTime = '10:00';
 
-    Appointment::factory()->create([
+    Appointment::factory()->for($organization)->create([
         'user_id' => $clinician->id,
         'appointment_date' => $appointmentDate->toDateString(),
         'appointment_time' => $appointmentTime,
@@ -94,17 +100,21 @@ it('prevents scheduling conflicting appointments for same clinician', function (
 });
 
 it('prevents scheduling conflicting appointments for same room', function () {
-    $receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $clinician1 = User::factory()->create(['role' => UserRole::Clinician]);
-    $clinician2 = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient1 = Patient::factory()->create();
-    $patient2 = Patient::factory()->create();
-    $room = ExamRoom::factory()->create(['is_active' => true]);
+    $organization = \App\Models\Organization::factory()->create();
+    $receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $clinician1 = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $clinician2 = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $organization->users()->attach($receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $organization->users()->attach($clinician1->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $organization->users()->attach($clinician2->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $patient1 = Patient::factory()->for($organization)->create();
+    $patient2 = Patient::factory()->for($organization)->create();
+    $room = ExamRoom::factory()->for($organization)->create(['is_active' => true]);
 
     $appointmentDate = Carbon::tomorrow();
     $appointmentTime = '10:00';
 
-    Appointment::factory()->create([
+    Appointment::factory()->for($organization)->create([
         'exam_room_id' => $room->id,
         'appointment_date' => $appointmentDate->toDateString(),
         'appointment_time' => $appointmentTime,

@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Validator;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->user = User::factory()->create(['role' => UserRole::Receptionist]);
-    $this->patient = Patient::factory()->create();
+    $this->organization = \App\Models\Organization::factory()->create();
+    $this->user = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($this->user->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->patient = Patient::factory()->for($this->organization)->create();
 });
 
 it('passes validation with valid data', function () {
@@ -64,8 +66,10 @@ it('validates email format when provided', function () {
 });
 
 it('authorizes receptionist to update patients', function () {
-    $user = User::factory()->create(['role' => UserRole::Receptionist]);
-    $patient = Patient::factory()->create();
+    $organization = \App\Models\Organization::factory()->create();
+    $user = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $organization->users()->attach($user->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $patient = Patient::factory()->for($organization)->create();
 
     $request = UpdatePatientRequest::create('/patients/'.$patient->id, 'PUT', []);
     $request->setUserResolver(fn () => $user);
@@ -78,8 +82,10 @@ it('authorizes receptionist to update patients', function () {
 });
 
 it('authorizes admin to update patients', function () {
-    $user = User::factory()->create(['role' => UserRole::Admin]);
-    $patient = Patient::factory()->create();
+    $organization = \App\Models\Organization::factory()->create();
+    $user = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $organization->users()->attach($user->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
+    $patient = Patient::factory()->for($organization)->create();
 
     $request = UpdatePatientRequest::create('/patients/'.$patient->id, 'PUT', []);
     $request->setUserResolver(fn () => $user);
@@ -92,8 +98,10 @@ it('authorizes admin to update patients', function () {
 });
 
 it('prevents clinician from updating patients', function () {
-    $user = User::factory()->create(['role' => UserRole::Clinician]);
-    $patient = Patient::factory()->create();
+    $organization = \App\Models\Organization::factory()->create();
+    $user = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $organization->id]);
+    $organization->users()->attach($user->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $patient = Patient::factory()->for($organization)->create();
 
     $request = UpdatePatientRequest::create('/patients/'.$patient->id, 'PUT', []);
     $request->setUserResolver(fn () => $user);

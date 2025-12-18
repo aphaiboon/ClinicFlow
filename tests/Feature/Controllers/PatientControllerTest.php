@@ -8,9 +8,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['role' => UserRole::Admin]);
-    $this->receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $this->clinician = User::factory()->create(['role' => UserRole::Clinician]);
+    $this->organization = \App\Models\Organization::factory()->create();
+    $this->admin = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($this->admin->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($this->receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($this->clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
 });
 
 it('requires authentication to view patients index', function () {
@@ -20,7 +24,7 @@ it('requires authentication to view patients index', function () {
 });
 
 it('displays patients index for authenticated users', function () {
-    Patient::factory()->count(5)->create();
+    Patient::factory()->for($this->organization)->count(5)->create();
 
     $response = $this->actingAs($this->receptionist)->get('/patients');
 
@@ -28,7 +32,7 @@ it('displays patients index for authenticated users', function () {
 });
 
 it('allows admin to view patients index', function () {
-    Patient::factory()->count(3)->create();
+    Patient::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->admin)->get('/patients');
 
@@ -36,7 +40,7 @@ it('allows admin to view patients index', function () {
 });
 
 it('allows receptionist to view patients index', function () {
-    Patient::factory()->count(3)->create();
+    Patient::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->receptionist)->get('/patients');
 
@@ -44,7 +48,7 @@ it('allows receptionist to view patients index', function () {
 });
 
 it('allows clinician to view patients index', function () {
-    Patient::factory()->count(3)->create();
+    Patient::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->clinician)->get('/patients');
 
@@ -52,8 +56,8 @@ it('allows clinician to view patients index', function () {
 });
 
 it('can search patients by name', function () {
-    Patient::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
-    Patient::factory()->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
+    Patient::factory()->for($this->organization)->create(['first_name' => 'John', 'last_name' => 'Doe']);
+    Patient::factory()->for($this->organization)->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
 
     $response = $this->actingAs($this->receptionist)->get('/patients?search=John');
 
@@ -112,7 +116,7 @@ it('validates required fields when creating patient', function () {
 });
 
 it('displays patient details', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->receptionist)->get("/patients/{$patient->id}");
 
@@ -120,7 +124,7 @@ it('displays patient details', function () {
 });
 
 it('displays edit patient form for authorized users', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->receptionist)->get("/patients/{$patient->id}/edit");
 
@@ -128,7 +132,7 @@ it('displays edit patient form for authorized users', function () {
 });
 
 it('allows receptionist to update a patient', function () {
-    $patient = Patient::factory()->create(['first_name' => 'John']);
+    $patient = Patient::factory()->for($this->organization)->create(['first_name' => 'John']);
 
     $response = $this->actingAs($this->receptionist)
         ->put("/patients/{$patient->id}", ['first_name' => 'Jane']);
@@ -138,7 +142,7 @@ it('allows receptionist to update a patient', function () {
 });
 
 it('prevents clinician from updating a patient', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->clinician)
         ->put("/patients/{$patient->id}", ['first_name' => 'Jane']);
@@ -147,7 +151,7 @@ it('prevents clinician from updating a patient', function () {
 });
 
 it('allows admin to delete a patient', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->admin)->delete("/patients/{$patient->id}");
 
@@ -156,7 +160,7 @@ it('allows admin to delete a patient', function () {
 });
 
 it('prevents receptionist from deleting a patient', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->receptionist)->delete("/patients/{$patient->id}");
 

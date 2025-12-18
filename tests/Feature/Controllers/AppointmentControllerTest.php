@@ -12,11 +12,15 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->admin = User::factory()->create(['role' => UserRole::Admin]);
-    $this->receptionist = User::factory()->create(['role' => UserRole::Receptionist]);
-    $this->clinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $this->patient = Patient::factory()->create();
-    $this->examRoom = ExamRoom::factory()->create();
+    $this->organization = \App\Models\Organization::factory()->create();
+    $this->admin = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->receptionist = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->clinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($this->admin->id, ['role' => \App\Enums\OrganizationRole::Admin->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($this->receptionist->id, ['role' => \App\Enums\OrganizationRole::Receptionist->value, 'joined_at' => now()]);
+    $this->organization->users()->attach($this->clinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $this->patient = Patient::factory()->for($this->organization)->create();
+    $this->examRoom = ExamRoom::factory()->for($this->organization)->create();
 });
 
 it('requires authentication to view appointments index', function () {
@@ -26,7 +30,7 @@ it('requires authentication to view appointments index', function () {
 });
 
 it('displays appointments index for authenticated users', function () {
-    Appointment::factory()->count(5)->create();
+    Appointment::factory()->for($this->organization)->count(5)->create();
 
     $response = $this->actingAs($this->receptionist)->get('/appointments');
 
@@ -34,7 +38,7 @@ it('displays appointments index for authenticated users', function () {
 });
 
 it('allows admin to view appointments index', function () {
-    Appointment::factory()->count(3)->create();
+    Appointment::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->admin)->get('/appointments');
 
@@ -42,7 +46,7 @@ it('allows admin to view appointments index', function () {
 });
 
 it('allows receptionist to view appointments index', function () {
-    Appointment::factory()->count(3)->create();
+    Appointment::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->receptionist)->get('/appointments');
 
@@ -50,7 +54,7 @@ it('allows receptionist to view appointments index', function () {
 });
 
 it('allows clinician to view appointments index', function () {
-    Appointment::factory()->count(3)->create();
+    Appointment::factory()->for($this->organization)->count(3)->create();
 
     $response = $this->actingAs($this->clinician)->get('/appointments');
 
@@ -111,7 +115,7 @@ it('validates required fields when creating appointment', function () {
 });
 
 it('displays appointment details', function () {
-    $appointment = Appointment::factory()->create();
+    $appointment = Appointment::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->receptionist)->get("/appointments/{$appointment->id}");
 
@@ -119,7 +123,7 @@ it('displays appointment details', function () {
 });
 
 it('displays edit appointment form for authorized users', function () {
-    $appointment = Appointment::factory()->create(['user_id' => $this->clinician->id]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['user_id' => $this->clinician->id]);
 
     $response = $this->actingAs($this->clinician)->get("/appointments/{$appointment->id}/edit");
 
@@ -127,7 +131,7 @@ it('displays edit appointment form for authorized users', function () {
 });
 
 it('allows clinician to update their own appointment', function () {
-    $appointment = Appointment::factory()->create(['user_id' => $this->clinician->id]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['user_id' => $this->clinician->id]);
 
     $response = $this->actingAs($this->clinician)
         ->put("/appointments/{$appointment->id}", ['notes' => 'Updated notes']);
@@ -137,8 +141,9 @@ it('allows clinician to update their own appointment', function () {
 });
 
 it('prevents clinician from updating other clinicians appointments', function () {
-    $otherClinician = User::factory()->create(['role' => UserRole::Clinician]);
-    $appointment = Appointment::factory()->create(['user_id' => $otherClinician->id]);
+    $otherClinician = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => $this->organization->id]);
+    $this->organization->users()->attach($otherClinician->id, ['role' => \App\Enums\OrganizationRole::Clinician->value, 'joined_at' => now()]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['user_id' => $otherClinician->id]);
 
     $response = $this->actingAs($this->clinician)
         ->put("/appointments/{$appointment->id}", ['notes' => 'Updated notes']);
@@ -147,7 +152,7 @@ it('prevents clinician from updating other clinicians appointments', function ()
 });
 
 it('allows receptionist to cancel an appointment', function () {
-    $appointment = Appointment::factory()->create(['status' => AppointmentStatus::Scheduled]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['status' => AppointmentStatus::Scheduled]);
 
     $response = $this->actingAs($this->receptionist)
         ->post("/appointments/{$appointment->id}/cancel", ['reason' => 'Patient request']);
@@ -161,7 +166,7 @@ it('allows receptionist to cancel an appointment', function () {
 });
 
 it('prevents clinician from canceling appointments', function () {
-    $appointment = Appointment::factory()->create(['user_id' => $this->clinician->id]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['user_id' => $this->clinician->id]);
 
     $response = $this->actingAs($this->clinician)
         ->post("/appointments/{$appointment->id}/cancel", ['reason' => 'Patient request']);
@@ -170,7 +175,7 @@ it('prevents clinician from canceling appointments', function () {
 });
 
 it('allows receptionist to assign room to appointment', function () {
-    $appointment = Appointment::factory()->create(['exam_room_id' => null]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['exam_room_id' => null]);
 
     $response = $this->actingAs($this->receptionist)
         ->post("/appointments/{$appointment->id}/assign-room", ['exam_room_id' => $this->examRoom->id]);
@@ -183,7 +188,7 @@ it('allows receptionist to assign room to appointment', function () {
 });
 
 it('prevents clinician from assigning room', function () {
-    $appointment = Appointment::factory()->create(['user_id' => $this->clinician->id]);
+    $appointment = Appointment::factory()->for($this->organization)->create(['user_id' => $this->clinician->id]);
 
     $response = $this->actingAs($this->clinician)
         ->post("/appointments/{$appointment->id}/assign-room", ['exam_room_id' => $this->examRoom->id]);
@@ -192,7 +197,7 @@ it('prevents clinician from assigning room', function () {
 });
 
 it('validates room assignment request', function () {
-    $appointment = Appointment::factory()->create();
+    $appointment = Appointment::factory()->for($this->organization)->create();
 
     $response = $this->actingAs($this->receptionist)
         ->post("/appointments/{$appointment->id}/assign-room", []);

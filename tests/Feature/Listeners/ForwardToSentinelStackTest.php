@@ -20,6 +20,7 @@ use function Pest\Laravel\mock;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    $this->organization = \App\Models\Organization::factory()->create();
     $this->envelopeBuilder = mock(EventEnvelopeBuilder::class);
     $this->client = mock(SentinelStackClientInterface::class);
     $this->listener = new ForwardToSentinelStack($this->client, $this->envelopeBuilder);
@@ -31,7 +32,7 @@ beforeEach(function () {
 });
 
 it('maps PatientCreated to domain_event with correct event_subtype', function () {
-    $patient = Patient::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
+    $patient = Patient::factory()->for($this->organization)->create(['first_name' => 'John', 'last_name' => 'Doe']);
     $event = new PatientCreated($patient);
 
     $expectedEnvelope = [
@@ -51,7 +52,7 @@ it('maps PatientCreated to domain_event with correct event_subtype', function ()
                 && $payload['medical_record_number'] === $patient->medical_record_number
                 && ! isset($payload['first_name'])
                 && ! isset($payload['last_name']);
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -63,7 +64,7 @@ it('maps PatientCreated to domain_event with correct event_subtype', function ()
 });
 
 it('maps PatientUpdated to domain_event with correct event_subtype', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
     $event = new PatientUpdated($patient);
 
     $expectedEnvelope = [
@@ -79,7 +80,7 @@ it('maps PatientUpdated to domain_event with correct event_subtype', function ()
         ->with('domain_event', \Mockery::on(function ($payload) use ($patient) {
             return $payload['event_subtype'] === 'patient.updated'
                 && $payload['patient_id'] === $patient->id;
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -91,7 +92,7 @@ it('maps PatientUpdated to domain_event with correct event_subtype', function ()
 });
 
 it('maps AppointmentScheduled to domain_event with correct event_subtype', function () {
-    $appointment = Appointment::factory()->create();
+    $appointment = Appointment::factory()->for($this->organization)->create();
     $event = new AppointmentScheduled($appointment);
 
     $expectedEnvelope = [
@@ -107,7 +108,7 @@ it('maps AppointmentScheduled to domain_event with correct event_subtype', funct
         ->with('domain_event', \Mockery::on(function ($payload) use ($appointment) {
             return $payload['event_subtype'] === 'appointment.scheduled'
                 && $payload['appointment_id'] === $appointment->id;
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -119,7 +120,7 @@ it('maps AppointmentScheduled to domain_event with correct event_subtype', funct
 });
 
 it('maps AppointmentUpdated to domain_event with correct event_subtype', function () {
-    $appointment = Appointment::factory()->create();
+    $appointment = Appointment::factory()->for($this->organization)->create();
     $event = new AppointmentUpdated($appointment);
 
     $expectedEnvelope = [
@@ -134,7 +135,7 @@ it('maps AppointmentUpdated to domain_event with correct event_subtype', functio
         ->once()
         ->with('domain_event', \Mockery::on(function ($payload) {
             return $payload['event_subtype'] === 'appointment.updated';
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -146,7 +147,7 @@ it('maps AppointmentUpdated to domain_event with correct event_subtype', functio
 });
 
 it('maps AppointmentCancelled to domain_event with correct event_subtype', function () {
-    $appointment = Appointment::factory()->create(['cancellation_reason' => 'Patient request']);
+    $appointment = Appointment::factory()->for($this->organization)->create(['cancellation_reason' => 'Patient request']);
     $event = new AppointmentCancelled($appointment);
 
     $expectedEnvelope = [
@@ -162,7 +163,7 @@ it('maps AppointmentCancelled to domain_event with correct event_subtype', funct
         ->with('domain_event', \Mockery::on(function ($payload) use ($appointment) {
             return $payload['event_subtype'] === 'appointment.cancelled'
                 && $payload['appointment_id'] === $appointment->id;
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -174,8 +175,8 @@ it('maps AppointmentCancelled to domain_event with correct event_subtype', funct
 });
 
 it('maps RoomAssigned to domain_event with correct event_subtype', function () {
-    $examRoom = ExamRoom::factory()->create();
-    $appointment = Appointment::factory()->create(['exam_room_id' => $examRoom->id]);
+    $examRoom = ExamRoom::factory()->for($this->organization)->create();
+    $appointment = Appointment::factory()->for($this->organization)->create(['exam_room_id' => $examRoom->id]);
     $event = new RoomAssigned($appointment);
 
     $expectedEnvelope = [
@@ -192,7 +193,7 @@ it('maps RoomAssigned to domain_event with correct event_subtype', function () {
             return $payload['event_subtype'] === 'room.assigned'
                 && $payload['appointment_id'] === $appointment->id
                 && $payload['room_id'] === $examRoom->id;
-        }))
+        }), $this->organization->id)
         ->andReturn($expectedEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
@@ -204,7 +205,7 @@ it('maps RoomAssigned to domain_event with correct event_subtype', function () {
 });
 
 it('ensures PHI safety - no sensitive patient data in payloads', function () {
-    $patient = Patient::factory()->create([
+    $patient = Patient::factory()->for($this->organization)->create([
         'first_name' => 'John',
         'last_name' => 'Doe',
         'date_of_birth' => '1990-01-15',
@@ -222,7 +223,7 @@ it('ensures PHI safety - no sensitive patient data in payloads', function () {
                 && ! isset($payload['phone'])
                 && ! isset($payload['email'])
                 && isset($payload['patient_id']);
-        }))
+        }), $this->organization->id)
         ->andReturn(['event_type' => 'domain_event', 'payload' => []]);
 
     $this->client->shouldReceive('ingestEvent')
@@ -233,7 +234,7 @@ it('ensures PHI safety - no sensitive patient data in payloads', function () {
 });
 
 it('uses envelope builder to wrap payloads', function () {
-    $patient = Patient::factory()->create();
+    $patient = Patient::factory()->for($this->organization)->create();
     $event = new PatientCreated($patient);
 
     $fullEnvelope = [
@@ -250,6 +251,7 @@ it('uses envelope builder to wrap payloads', function () {
 
     $this->envelopeBuilder->shouldReceive('buildEnvelope')
         ->once()
+        ->with('domain_event', \Mockery::any(), $this->organization->id)
         ->andReturn($fullEnvelope);
 
     $this->client->shouldReceive('ingestEvent')
