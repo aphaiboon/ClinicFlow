@@ -7,9 +7,10 @@ test('unauthenticated users can visit the welcome page', function () {
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('welcome')
-        ->has('canRegister')
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('welcome')
+            ->has('canRegister')
     );
 });
 
@@ -26,8 +27,9 @@ test('welcome page displays login button for unauthenticated users', function ()
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('welcome')
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('welcome')
     );
 });
 
@@ -39,9 +41,10 @@ test('welcome page displays register button when registration is enabled', funct
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('welcome')
-        ->where('canRegister', true)
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('welcome')
+            ->where('canRegister', true)
     );
 });
 
@@ -51,9 +54,10 @@ test('welcome page does not display register button when registration is disable
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('welcome')
-        ->where('canRegister', false)
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('welcome')
+            ->where('canRegister', false)
     );
 
     config(['fortify.features' => array_merge(config('fortify.features', []), [Features::registration()])]);
@@ -63,8 +67,9 @@ test('welcome page login button links to login route', function () {
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('welcome')
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('welcome')
     );
 });
 
@@ -76,9 +81,10 @@ test('welcome page register button has correct styling and is visible', function
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('welcome')
-        ->where('canRegister', true)
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('welcome')
+            ->where('canRegister', true)
     );
 });
 
@@ -98,12 +104,13 @@ test('welcome page displays concise hero section without duplicate heading', fun
     $response = $this->get(route('home'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page
-        ->component('welcome')
+    $response->assertInertia(
+        fn ($page) => $page
+            ->component('welcome')
     );
-    
+
     $html = $response->getContent();
-    
+
     expect($html)->not->toContain('text-7xl bg-gradient-to-r from-[#323d47] to-[#1bc3bb]')
         ->and($html)->not->toContain('Clinic Management System');
 });
