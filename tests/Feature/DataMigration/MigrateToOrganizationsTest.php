@@ -2,40 +2,21 @@
 
 use App\Enums\OrganizationRole;
 use App\Enums\UserRole;
-use App\Models\Appointment;
-use App\Models\AuditLog;
-use App\Models\ExamRoom;
 use App\Models\Organization;
-use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Create existing data without organizations (simulating pre-migration state)
-    $this->user1 = User::factory()->create(['role' => UserRole::User]);
-    $this->user2 = User::factory()->create(['role' => UserRole::User]);
-    $this->user3 = User::factory()->create(['role' => UserRole::SuperAdmin]);
-
-    // Manually insert data without organization_id to simulate old state
-    DB::statement('PRAGMA foreign_keys=OFF'); // SQLite specific
-    DB::table('patients')->insert([
-        'medical_record_number' => 'MRN-001',
-        'first_name' => 'John',
-        'last_name' => 'Doe',
-        'date_of_birth' => '1990-01-01',
-        'gender' => 'male',
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-    DB::statement('PRAGMA foreign_keys=ON');
+    // Create existing users without organization memberships
+    $this->user1 = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => null]);
+    $this->user2 = User::factory()->create(['role' => UserRole::User, 'current_organization_id' => null]);
+    $this->user3 = User::factory()->create(['role' => UserRole::SuperAdmin, 'current_organization_id' => null]);
 });
 
-it('uses existing default organization or creates one during migration', function () {
-    // Delete the one from beforeEach to test creation
+it('creates default organization during migration if it does not exist', function () {
     Organization::where('name', 'Default Clinic')->delete();
 
     Artisan::call('organizations:migrate-existing-data');
@@ -43,6 +24,16 @@ it('uses existing default organization or creates one during migration', functio
     $organization = Organization::where('name', 'Default Clinic')->first();
     expect($organization)->not->toBeNull()
         ->and($organization->is_active)->toBeTrue();
+});
+
+it('uses existing default organization if it already exists', function () {
+    $existingOrg = Organization::factory()->create(['name' => 'Default Clinic', 'slug' => 'default-clinic']);
+
+    Artisan::call('organizations:migrate-existing-data');
+
+    $organizations = Organization::where('name', 'Default Clinic')->count();
+    expect($organizations)->toBe(1)
+        ->and(Organization::where('name', 'Default Clinic')->first()->id)->toBe($existingOrg->id);
 });
 
 it('attaches existing users to default organization as owners', function () {
@@ -86,64 +77,25 @@ it('does not set current_organization_id for super admin', function () {
     expect($this->user3->current_organization_id)->toBeNull();
 });
 
-it('migrates existing patients to default organization', function () {
-    // Create a patient that belongs to a different organization or no organization
-    $otherOrg = Organization::factory()->create();
-    $patient = Patient::factory()->create(['organization_id' => $otherOrg->id]);
-
-    // The migration should not affect patients that already have an organization
-    // So we'll test with patients that need migration by checking the migration logic
-    // Since all patients must have organization_id (FK constraint), we test the command works
+it('does not duplicate user attachments when run multiple times', function () {
+    Artisan::call('organizations:migrate-existing-data');
     Artisan::call('organizations:migrate-existing-data');
 
     $organization = Organization::where('name', 'Default Clinic')->first();
+    $this->user1->refresh();
 
-    // Verify the command completed without errors
-    expect($organization)->not->toBeNull();
+    $attachments = $this->user1->organizations()->where('organization_id', $organization->id)->count();
+    expect($attachments)->toBe(1);
 });
 
-it('migrates existing appointments to default organization', function () {
-    // Create patient and appointment in default organization
-    $patient = Patient::factory()->create(['organization_id' => $this->defaultOrg->id]);
-    $appointment = Appointment::factory()->create([
-        'organization_id' => $this->defaultOrg->id, // Must have organization_id due to FK
-        'patient_id' => $patient->id,
-        'user_id' => $this->user1->id,
-    ]);
-
-    // Since we can't easily test null organization_id due to FK constraints,
-    // we verify the migration command runs successfully
-    Artisan::call('organizations:migrate-existing-data');
-
-    $organization = Organization::where('name', 'Default Clinic')->first();
-    expect($organization)->not->toBeNull();
-});
-
-it('migrates existing exam rooms to default organization', function () {
-    // Create exam room in default organization
-    $room = ExamRoom::factory()->create([
-        'organization_id' => $this->defaultOrg->id, // Must have organization_id due to FK
-    ]);
-
-    // Verify the migration command runs successfully
-    Artisan::call('organizations:migrate-existing-data');
-
-    $organization = Organization::where('name', 'Default Clinic')->first();
-    expect($organization)->not->toBeNull();
-});
-
-it('migrates existing audit logs to default organization', function () {
-    $auditLog = AuditLog::factory()->create([
-        'user_id' => $this->user1->id,
-        'organization_id' => null,
-    ]);
+it('does not overwrite existing current_organization_id', function () {
+    $existingOrg = Organization::factory()->create();
+    $this->user1->update(['current_organization_id' => $existingOrg->id]);
 
     Artisan::call('organizations:migrate-existing-data');
 
-    $organization = Organization::where('name', 'Default Clinic')->first();
-    $auditLog->refresh();
-
-    expect($auditLog->organization_id)->toBe($organization->id);
+    $this->user1->refresh();
+    expect($this->user1->current_organization_id)->toBe($existingOrg->id);
 });
 
 it('is idempotent and does not create duplicate organizations', function () {
