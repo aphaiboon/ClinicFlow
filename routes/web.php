@@ -14,6 +14,13 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+Route::middleware('guest')->group(function () {
+    Route::get('register', [\App\Http\Controllers\OrganizationRegistrationController::class, 'create'])
+        ->name('organization.register');
+    Route::post('register', [\App\Http\Controllers\OrganizationRegistrationController::class, 'store'])
+        ->name('organization.register.store');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
