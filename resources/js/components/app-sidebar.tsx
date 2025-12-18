@@ -66,12 +66,12 @@ const getMainNavItems = (userRole?: string): NavItem[] => {
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
+        href: 'https://github.com/aphaiboon/clinicflow',
         icon: Folder,
     },
     {
         title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
+        href: 'https://github.com/aphaiboon/clinicflow#readme',
         icon: BookOpen,
     },
 ];
