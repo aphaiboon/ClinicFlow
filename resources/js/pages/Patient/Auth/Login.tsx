@@ -15,6 +15,7 @@ interface LoginProps {
 
 export default function PatientLogin({ status, prefilledEmail }: LoginProps) {
     const [email, setEmail] = useState(prefilledEmail || '');
+    const [processing, setProcessing] = useState(false);
 
     useEffect(() => {
         if (prefilledEmail) {
@@ -22,9 +23,24 @@ export default function PatientLogin({ status, prefilledEmail }: LoginProps) {
         }
     }, [prefilledEmail]);
 
+    const isEmailValid = email.trim() !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.post('/patient/login', { email });
+        if (!isEmailValid) {
+            return;
+        }
+
+        setProcessing(true);
+        router.post(
+            '/patient/login',
+            { email },
+            {
+                onFinish: () => {
+                    setProcessing(false);
+                },
+            }
+        );
     };
 
     return (
@@ -51,7 +67,12 @@ export default function PatientLogin({ status, prefilledEmail }: LoginProps) {
                     <InputError message={undefined} />
                 </div>
 
-                <Button type="submit" className="w-full">
+                <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={!isEmailValid || processing}
+                >
+                    {processing && <Spinner />}
                     Send Login Link
                 </Button>
 
