@@ -65,8 +65,10 @@ it('can access pivot role on users relationship', function () {
 
 it('has patients relationship', function () {
     $organization = Organization::factory()->create();
+
     Patient::factory()->count(3)->create(['organization_id' => $organization->id]);
 
+    $organization->refresh();
     expect($organization->patients)->toHaveCount(3)
         ->and($organization->patients->first())->toBeInstanceOf(Patient::class);
 });
@@ -115,7 +117,7 @@ it('can get owners via owners method', function () {
     $organization->users()->attach($owner2->id, ['role' => OrganizationRole::Owner->value, 'joined_at' => now()]);
     $organization->users()->attach($admin->id, ['role' => OrganizationRole::Admin->value, 'joined_at' => now()]);
 
-    $owners = $organization->owners();
+    $owners = $organization->owners()->get();
 
     expect($owners)->toHaveCount(2)
         ->and($owners->pluck('id')->toArray())->toContain($owner1->id, $owner2->id)
@@ -132,7 +134,7 @@ it('can get admins via admins method', function () {
     $organization->users()->attach($admin2->id, ['role' => OrganizationRole::Admin->value, 'joined_at' => now()]);
     $organization->users()->attach($owner->id, ['role' => OrganizationRole::Owner->value, 'joined_at' => now()]);
 
-    $admins = $organization->admins();
+    $admins = $organization->admins()->get();
 
     expect($admins)->toHaveCount(2)
         ->and($admins->pluck('id')->toArray())->toContain($admin1->id, $admin2->id)
@@ -147,8 +149,7 @@ it('can get all members via members method', function () {
     $organization->users()->attach($user1->id, ['role' => OrganizationRole::Clinician->value, 'joined_at' => now()]);
     $organization->users()->attach($user2->id, ['role' => OrganizationRole::Receptionist->value, 'joined_at' => now()]);
 
-    $members = $organization->members();
+    $members = $organization->members()->get();
 
     expect($members)->toHaveCount(2);
 });
-
