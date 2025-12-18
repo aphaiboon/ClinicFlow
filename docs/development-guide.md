@@ -56,9 +56,10 @@ ClinicFlow uses [Pest PHP](https://pestphp.com) for all tests, built on top of P
 
 ### Test Structure
 
-Tests are organized in two directories:
+Tests are organized in three directories:
 - `tests/Feature/` - Feature tests (HTTP requests, database interactions)
 - `tests/Unit/` - Unit tests (isolated classes, pure functions)
+- `tests/Browser/` - Browser/E2E tests (full frontend-to-backend integration testing)
 
 ### Writing Tests
 

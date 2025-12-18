@@ -206,6 +206,35 @@ php artisan test --filter=testName
 php artisan test --coverage
 ```
 
+### Browser (E2E) Tests
+
+ClinicFlow uses Pest v4 browser testing with Playwright for end-to-end testing.
+
+**First-time setup:**
+
+Install Playwright browsers:
+```bash
+npx playwright install --with-deps chromium
+```
+
+**Run browser tests:**
+
+```bash
+php artisan test tests/Browser/
+```
+
+**Run specific browser test:**
+
+```bash
+php artisan test tests/Browser/Auth/LoginTest.php
+```
+
+**Run browser tests in headed mode (for debugging):**
+
+```bash
+php artisan test tests/Browser/ --headed
+```
+
 ## Development Workflow
 
 ### Code Style
