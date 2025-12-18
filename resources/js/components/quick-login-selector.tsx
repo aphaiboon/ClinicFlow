@@ -92,7 +92,7 @@ function getDefaultUsersByRole(users: DemoUser[]): DemoUser[] {
         }
     });
 
-    return Array.from(roleMap.values());
+    return Array.from(roleMap.values()).sort((a, b) => a.id - b.id);
 }
 
 function filterUsers(users: DemoUser[], query: string): DemoUser[] {
@@ -101,15 +101,18 @@ function filterUsers(users: DemoUser[], query: string): DemoUser[] {
     }
 
     const lowerQuery = query.toLowerCase();
-    return users.filter(
-        (user) =>
-            user.name.toLowerCase().includes(lowerQuery) ||
-            user.email.toLowerCase().includes(lowerQuery) ||
-            formatRole(user.role, user.organizationRole, user.type)
-                .toLowerCase()
-                .includes(lowerQuery) ||
-            (user.organizationName?.toLowerCase().includes(lowerQuery) ?? false),
-    );
+    return users
+        .filter(
+            (user) =>
+                user.name.toLowerCase().includes(lowerQuery) ||
+                user.email.toLowerCase().includes(lowerQuery) ||
+                formatRole(user.role, user.organizationRole, user.type)
+                    .toLowerCase()
+                    .includes(lowerQuery) ||
+                (user.organizationName?.toLowerCase().includes(lowerQuery) ??
+                    false),
+        )
+        .sort((a, b) => a.id - b.id);
 }
 
 export default function QuickLoginSelector({
