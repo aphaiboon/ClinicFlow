@@ -31,7 +31,7 @@ class OrganizationRegistrationController extends Controller
             'city' => $request->input('city'),
             'state' => $request->input('state'),
             'postal_code' => $request->input('postal_code'),
-            'country' => $request->input('country'),
+            'country' => $request->input('country', 'US'),
             'tax_id' => $request->input('tax_id'),
             'npi_number' => $request->input('npi_number'),
             'practice_type' => $request->input('practice_type'),
