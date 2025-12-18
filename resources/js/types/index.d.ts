@@ -22,10 +22,20 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface Organization {
+    id: number;
+    name: string;
+    email?: string | null;
+    is_active: boolean;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
-    auth: Auth;
+    auth: Auth & {
+        currentOrganization?: Organization | null;
+        organizations?: Organization[];
+    };
     sidebarOpen: boolean;
     [key: string]: unknown;
 }
