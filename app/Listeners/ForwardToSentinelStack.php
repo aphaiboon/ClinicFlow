@@ -57,7 +57,8 @@ class ForwardToSentinelStack implements ShouldQueue
             ],
         };
 
-        $envelope = $this->envelopeBuilder->buildEnvelope('domain_event', $payload);
+        $organizationId = $this->getOrganizationIdFromEvent($event);
+        $envelope = $this->envelopeBuilder->buildEnvelope('domain_event', $payload, $organizationId);
 
         $this->sentinelStackClient->ingestEvent($envelope);
     }

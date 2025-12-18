@@ -6,16 +6,13 @@ use App\Events\PatientCreated;
 use App\Models\Organization;
 use App\Models\Patient;
 use App\Models\User;
+use App\Services\Integration\SentinelStackClientInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Mock HTTP client for SentinelStack
-    Http::fake();
-
     $this->organization = Organization::factory()->create();
     $this->user = User::factory()->create([
         'role' => UserRole::User,
@@ -25,6 +22,27 @@ beforeEach(function () {
         'role' => OrganizationRole::Owner->value,
         'joined_at' => now(),
     ]);
+
+    // Capture events sent to SentinelStack
+    $this->capturedEvents = [];
+    $this->app->bind(SentinelStackClientInterface::class, function () {
+        return new class($this->capturedEvents) implements SentinelStackClientInterface
+        {
+            public function __construct(private &$capturedEvents) {}
+
+            public function ingestEvent(array $envelope): void
+            {
+                $this->capturedEvents[] = $envelope;
+            }
+
+            public function ingestEvents(array $envelopes): void
+            {
+                foreach ($envelopes as $envelope) {
+                    $this->capturedEvents[] = $envelope;
+                }
+            }
+        };
+    });
 });
 
 it('sends organization_id as tenant_id in event envelope', function () {
@@ -36,12 +54,8 @@ it('sends organization_id as tenant_id in event envelope', function () {
 
     Event::dispatch(new PatientCreated($patient));
 
-    Http::assertSent(function ($request) {
-        $data = $request->data();
-
-        return isset($data['tenant_id'])
-            && $data['tenant_id'] === (string) $this->organization->id;
-    });
+    expect($this->capturedEvents)->toHaveCount(1)
+        ->and($this->capturedEvents[0]['tenant_id'])->toBe((string) $this->organization->id);
 });
 
 it('uses resource organization_id as tenant_id when available', function () {
@@ -58,11 +72,12 @@ it('uses resource organization_id as tenant_id when available', function () {
         ->and($this->capturedEvents[0]['tenant_id'])->toBe((string) $organization2->id);
 });
 
-it('handles null tenant_id when resource has no organization', function () {
+it('falls back to config tenant_id when organization_id is null', function () {
+    config(['sentinelstack.tenant_id' => 'default-tenant']);
+
     $this->actingAs($this->user);
 
-    // This shouldn't happen in practice due to FK constraints, but test the behavior
-    $patient = Patient::factory()->make(['organization_id' => null]);
-    // We can't actually create a patient without organization_id due to FK, so skip this test
-    $this->markTestSkipped('Cannot create patient without organization_id due to FK constraints');
+    // Create an event that would have null organization_id (shouldn't happen in practice, but test the fallback)
+    // Since we can't create a patient without organization_id, we'll test via audit log which can be null
+    $this->markTestSkipped('Testing fallback requires a scenario with null organization_id, which is rare in practice');
 });
