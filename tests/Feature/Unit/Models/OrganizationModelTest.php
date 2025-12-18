@@ -75,8 +75,15 @@ it('has patients relationship', function () {
 
 it('has appointments relationship', function () {
     $organization = Organization::factory()->create();
-    Appointment::factory()->count(2)->create(['organization_id' => $organization->id]);
+    $patient = Patient::factory()->create(['organization_id' => $organization->id]);
+    $user = User::factory()->create();
+    Appointment::factory()->count(2)->create([
+        'organization_id' => $organization->id,
+        'patient_id' => $patient->id,
+        'user_id' => $user->id,
+    ]);
 
+    $organization->refresh();
     expect($organization->appointments)->toHaveCount(2)
         ->and($organization->appointments->first())->toBeInstanceOf(Appointment::class);
 });
