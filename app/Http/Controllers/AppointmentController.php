@@ -52,10 +52,15 @@ class AppointmentController extends Controller
     {
         $this->authorize('create', Appointment::class);
 
+        $organization = auth()->user()->currentOrganization;
+
         return Inertia::render('Appointments/Create', [
-            'patients' => \App\Models\Patient::orderBy('last_name')->get(),
-            'clinicians' => \App\Models\User::where('role', \App\Enums\UserRole::Clinician)->orWhere('role', \App\Enums\UserRole::Admin)->orderBy('name')->get(),
-            'examRooms' => \App\Models\ExamRoom::where('is_active', true)->orderBy('room_number')->get(),
+            'patients' => $organization?->patients()->orderBy('last_name')->get() ?? collect(),
+            'clinicians' => $organization?->users()
+                ->wherePivotIn('role', [\App\Enums\OrganizationRole::Clinician->value, \App\Enums\OrganizationRole::Admin->value, \App\Enums\OrganizationRole::Owner->value])
+                ->orderBy('name')
+                ->get() ?? collect(),
+            'examRooms' => $organization?->examRooms()->where('is_active', true)->orderBy('room_number')->get() ?? collect(),
         ]);
     }
 
@@ -89,11 +94,16 @@ class AppointmentController extends Controller
 
         $appointment->load(['patient', 'user', 'examRoom']);
 
+        $organization = auth()->user()->currentOrganization;
+
         return Inertia::render('Appointments/Edit', [
             'appointment' => $appointment,
-            'patients' => \App\Models\Patient::orderBy('last_name')->get(),
-            'clinicians' => \App\Models\User::where('role', \App\Enums\UserRole::Clinician)->orWhere('role', \App\Enums\UserRole::Admin)->orderBy('name')->get(),
-            'examRooms' => \App\Models\ExamRoom::where('is_active', true)->orderBy('room_number')->get(),
+            'patients' => $organization?->patients()->orderBy('last_name')->get() ?? collect(),
+            'clinicians' => $organization?->users()
+                ->wherePivotIn('role', [\App\Enums\OrganizationRole::Clinician->value, \App\Enums\OrganizationRole::Admin->value, \App\Enums\OrganizationRole::Owner->value])
+                ->orderBy('name')
+                ->get() ?? collect(),
+            'examRooms' => $organization?->examRooms()->where('is_active', true)->orderBy('room_number')->get() ?? collect(),
         ]);
     }
 
