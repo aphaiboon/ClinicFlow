@@ -30,16 +30,20 @@ beforeEach(function () {
         {
             public function __construct(private &$capturedEvents) {}
 
-            public function ingestEvent(array $envelope): void
+            public function ingestEvent(array $envelope): bool
             {
                 $this->capturedEvents[] = $envelope;
+
+                return true;
             }
 
-            public function ingestEvents(array $envelopes): void
+            public function ingestEvents(array $envelopes): bool
             {
                 foreach ($envelopes as $envelope) {
                     $this->capturedEvents[] = $envelope;
                 }
+
+                return true;
             }
         };
     });
