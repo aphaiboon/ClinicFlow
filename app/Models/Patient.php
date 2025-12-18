@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Gender;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Patient extends Model
@@ -12,6 +13,7 @@ class Patient extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'medical_record_number',
         'first_name',
         'last_name',
@@ -33,6 +35,11 @@ class Patient extends Model
             'date_of_birth' => 'date',
             'gender' => Gender::class,
         ];
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function appointments(): HasMany

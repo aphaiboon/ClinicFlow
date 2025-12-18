@@ -13,6 +13,7 @@ class Appointment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'organization_id',
         'patient_id',
         'user_id',
         'exam_room_id',
@@ -36,6 +37,11 @@ class Appointment extends Model
             'duration_minutes' => 'integer',
             'cancelled_at' => 'datetime',
         ];
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function patient(): BelongsTo

@@ -15,6 +15,7 @@ class AuditLog extends Model
 
     protected $fillable = [
         'user_id',
+        'organization_id',
         'action',
         'resource_type',
         'resource_id',
@@ -56,6 +57,11 @@ class AuditLog extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function organization(): BelongsTo
+    {
+        return $this->belongsTo(Organization::class);
     }
 
     public function scopeByUser($query, int $userId): void
