@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\ExamRoom;
+use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ExamRoomFactory extends Factory
@@ -19,6 +20,7 @@ class ExamRoomFactory extends Factory
         ];
 
         return [
+            'organization_id' => Organization::factory(),
             'room_number' => 'R'.fake()->unique()->numerify('###'),
             'name' => 'Exam Room '.fake()->numberBetween(1, 50),
             'floor' => fake()->numberBetween(1, 3),

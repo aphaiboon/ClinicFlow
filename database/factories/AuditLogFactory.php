@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\AuditAction;
 use App\Models\AuditLog;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -14,6 +15,7 @@ class AuditLogFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'user_id' => User::factory(),
             'action' => fake()->randomElement(AuditAction::cases()),
             'resource_type' => fake()->randomElement(['Patient', 'Appointment', 'ExamRoom']),

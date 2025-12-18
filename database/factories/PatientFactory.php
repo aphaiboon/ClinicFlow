@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\Gender;
+use App\Models\Organization;
 use App\Models\Patient;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -13,6 +14,7 @@ class PatientFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'medical_record_number' => 'MRN-'.fake()->unique()->numerify('########'),
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),

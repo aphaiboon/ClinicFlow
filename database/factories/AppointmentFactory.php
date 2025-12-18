@@ -6,6 +6,7 @@ use App\Enums\AppointmentStatus;
 use App\Enums\AppointmentType;
 use App\Models\Appointment;
 use App\Models\ExamRoom;
+use App\Models\Organization;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -17,6 +18,7 @@ class AppointmentFactory extends Factory
     public function definition(): array
     {
         return [
+            'organization_id' => Organization::factory(),
             'patient_id' => Patient::factory(),
             'user_id' => User::factory(),
             'exam_room_id' => null,
