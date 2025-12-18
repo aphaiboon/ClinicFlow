@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import QuickLoginSelector from '@/components/quick-login-selector';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,18 +11,36 @@ import { store } from '@/routes/login';
 import { register } from '@/routes/organization';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/react';
+import { useState } from 'react';
+
+interface DemoUser {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+}
 
 interface LoginProps {
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
+    demoUsers?: DemoUser[];
 }
 
 export default function Login({
     status,
     canResetPassword,
     canRegister,
+    demoUsers,
 }: LoginProps) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleUserSelect = (selectedEmail: string, selectedPassword: string) => {
+        setEmail(selectedEmail);
+        setPassword(selectedPassword);
+    };
+
     return (
         <AuthLayout
             title="Log in to your account"
@@ -36,6 +55,13 @@ export default function Login({
             >
                 {({ processing, errors }) => (
                     <>
+                        {demoUsers && demoUsers.length > 0 && (
+                            <QuickLoginSelector
+                                demoUsers={demoUsers}
+                                onUserSelect={handleUserSelect}
+                            />
+                        )}
+
                         <div className="grid gap-6">
                             <div className="grid gap-2">
                                 <Label htmlFor="email">Email address</Label>
@@ -43,6 +69,8 @@ export default function Login({
                                     id="email"
                                     type="email"
                                     name="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
                                     autoFocus
                                     tabIndex={1}
@@ -69,6 +97,8 @@ export default function Login({
                                     id="password"
                                     type="password"
                                     name="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"

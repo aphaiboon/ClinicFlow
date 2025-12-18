@@ -1,3 +1,4 @@
+import DemoWarningBanner from '@/components/demo-warning-banner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { login } from '@/routes';
@@ -52,6 +53,7 @@ export default function Welcome({
         <>
             <Head title="ClinicFlow - Clinic Management System" />
             <div className="flex min-h-screen flex-col bg-background">
+                <DemoWarningBanner />
                 <header className="border-b border-border bg-card/50 backdrop-blur-sm">
                     <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
                         <Link href="/" className="flex items-center gap-3">

@@ -8,7 +8,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { useRef } from 'react';
 
 interface DemoUser {
     id: number;
