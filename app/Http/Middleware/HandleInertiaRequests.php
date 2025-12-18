@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
+            'isDemoEnvironment' => app()->environment(['local', 'staging']),
             'auth' => [
                 'user' => $user?->load('currentOrganization', 'organizations'),
                 'currentOrganization' => $user?->currentOrganization,
