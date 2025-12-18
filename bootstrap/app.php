@@ -25,5 +25,18 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            // Check if the request is for patient routes and user is not authenticated with patient guard
+            if ($request->is('patient/*') && ! \Illuminate\Support\Facades\Auth::guard('patient')->check()) {
+                // If user is authenticated with web guard (staff), redirect to regular login
+                if (\Illuminate\Support\Facades\Auth::guard('web')->check()) {
+                    return redirect()->route('login');
+                }
+
+                // If unauthenticated, redirect to patient login
+                return redirect()->route('patient.login');
+            }
+
+            return redirect()->route('login');
+        });
     })->create();

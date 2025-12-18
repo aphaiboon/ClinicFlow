@@ -82,8 +82,8 @@ class PatientProfileService
     public function validateProfileUpdate(array $data, Patient $patient): void
     {
         $rules = [
-            'phone' => ['sometimes', 'required', 'string', 'max:20'],
-            'email' => ['sometimes', 'required', 'email', 'max:255', 'unique:patients,email,' . $patient->id],
+            'phone' => ['sometimes', 'required', 'string', 'regex:/^[\d\s\-\+\(\)]{7,20}$/', 'max:20'],
+            'email' => ['sometimes', 'required', 'email', 'max:255', 'unique:patients,email,'.$patient->id],
             'address_line_1' => ['sometimes', 'required', 'string', 'max:255'],
             'address_line_2' => ['nullable', 'string', 'max:255'],
             'city' => ['sometimes', 'required', 'string', 'max:100'],

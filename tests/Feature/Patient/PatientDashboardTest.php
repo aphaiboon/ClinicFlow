@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\Organization;
 use App\Models\Patient;
 use App\Models\User;
-use App\Enums\AppointmentStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -47,10 +47,16 @@ test('dashboard displays only patients own appointments', function () {
             ->component('Patient/Dashboard')
             ->has('upcomingAppointments', 1)
             ->where('upcomingAppointments.0.id', $patientAppointment->id)
-            ->missing('upcomingAppointments', fn (Assert $appointments) => $appointments
-                ->where('id', $otherPatientAppointment->id)
-            )
         );
+
+    // Verify the other patient's appointment is not in the list
+    // Since we have exactly 1 appointment and it's the patient's, the other is excluded
+    $upcomingIds = collect($response->viewData('page')['props']['upcomingAppointments'])
+        ->pluck('id')
+        ->toArray();
+    expect($upcomingIds)->toHaveCount(1)
+        ->and($upcomingIds)->toContain($patientAppointment->id)
+        ->and($upcomingIds)->not->toContain($otherPatientAppointment->id);
 });
 
 test('dashboard shows upcoming appointments correctly', function () {
@@ -193,4 +199,3 @@ test('dashboard handles empty appointment states', function () {
             ->has('recentAppointments', 0)
         );
 });
-

@@ -202,13 +202,13 @@ test('patient cannot update other patients profiles', function () {
 
 test('unauthenticated users cannot access profile routes', function () {
     $response1 = $this->get(route('patient.profile.show'));
-    $response1->assertRedirect('/login'); // Default redirect for unauthenticated requests
+    $response1->assertRedirect(route('patient.login'));
 
     $response2 = $this->get(route('patient.profile.edit'));
-    $response2->assertRedirect('/login');
+    $response2->assertRedirect(route('patient.login'));
 
     $response3 = $this->put(route('patient.profile.update'), []);
-    $response3->assertRedirect('/login');
+    $response3->assertRedirect(route('patient.login'));
 });
 
 test('staff cannot access patient profile routes', function () {
@@ -241,4 +241,3 @@ test('profile update can update partial fields', function () {
         'email' => $originalEmail,
     ]);
 });
-
