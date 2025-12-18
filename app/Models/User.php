@@ -71,7 +71,7 @@ class User extends Authenticatable
 
     public function switchOrganization(Organization $organization): void
     {
-        if (! $this->organizations()->where('organizations.id', $organization->id)->exists()) {
+        if (! $this->isSuperAdmin() && ! $this->isMemberOf($organization)) {
             throw new \RuntimeException('User is not a member of this organization.');
         }
 

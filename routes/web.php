@@ -36,6 +36,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('audit-logs/{auditLog}', [\App\Http\Controllers\AuditLogController::class, 'show'])->name('audit-logs.show');
 
+    Route::get('organizations', [\App\Http\Controllers\OrganizationController::class, 'index'])->name('organizations.index');
+    Route::post('organizations/{organization}/switch', [\App\Http\Controllers\OrganizationController::class, 'switch'])->name('organizations.switch');
+
     Route::middleware(\App\Http\Middleware\RequireSuperAdmin::class)->prefix('super-admin')->name('super-admin.')->group(function () {
         Route::get('dashboard', [\App\Http\Controllers\SuperAdmin\SuperAdminController::class, 'dashboard'])->name('dashboard');
         Route::get('organizations', [\App\Http\Controllers\SuperAdmin\OrganizationController::class, 'index'])->name('organizations.index');
