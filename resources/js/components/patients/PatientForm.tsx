@@ -9,9 +9,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Form } from '@inertiajs/react';
 import { type Patient } from '@/types';
 import { type RouteDefinition } from '@/wayfinder';
+import { Form } from '@inertiajs/react';
 import { useState } from 'react';
 
 interface PatientFormProps {
@@ -20,14 +20,15 @@ interface PatientFormProps {
     processing?: boolean;
 }
 
-export function PatientForm({ patient, route, processing = false }: PatientFormProps) {
+export function PatientForm({
+    patient,
+    route,
+    processing = false,
+}: PatientFormProps) {
     const [gender, setGender] = useState(patient?.gender || '');
 
     return (
-        <Form
-            {...route.form()}
-            className="space-y-6"
-        >
+        <Form {...route.form()} className="space-y-6">
             {({ processing: formProcessing, errors }) => (
                 <>
                     <input type="hidden" name="gender" value={gender} />
@@ -59,12 +60,20 @@ export function PatientForm({ patient, route, processing = false }: PatientFormP
 
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
-                            <Label htmlFor="date_of_birth">Date of Birth *</Label>
+                            <Label htmlFor="date_of_birth">
+                                Date of Birth *
+                            </Label>
                             <Input
                                 id="date_of_birth"
                                 type="date"
                                 name="date_of_birth"
-                                defaultValue={patient?.date_of_birth ? new Date(patient.date_of_birth).toISOString().split('T')[0] : ''}
+                                defaultValue={
+                                    patient?.date_of_birth
+                                        ? new Date(patient.date_of_birth)
+                                              .toISOString()
+                                              .split('T')[0]
+                                        : ''
+                                }
                                 required
                                 max={new Date().toISOString().split('T')[0]}
                             />
@@ -73,15 +82,23 @@ export function PatientForm({ patient, route, processing = false }: PatientFormP
 
                         <div className="grid gap-2">
                             <Label htmlFor="gender">Gender *</Label>
-                            <Select value={gender} onValueChange={setGender} required>
+                            <Select
+                                value={gender}
+                                onValueChange={setGender}
+                                required
+                            >
                                 <SelectTrigger id="gender">
                                     <SelectValue placeholder="Select gender" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="male">Male</SelectItem>
-                                    <SelectItem value="female">Female</SelectItem>
+                                    <SelectItem value="female">
+                                        Female
+                                    </SelectItem>
                                     <SelectItem value="other">Other</SelectItem>
-                                    <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
+                                    <SelectItem value="prefer_not_to_say">
+                                        Prefer not to say
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                             <InputError message={errors.gender} />
@@ -183,8 +200,15 @@ export function PatientForm({ patient, route, processing = false }: PatientFormP
                     </div>
 
                     <div className="flex gap-4">
-                        <Button type="submit" disabled={formProcessing || processing}>
-                            {formProcessing || processing ? 'Saving...' : patient ? 'Update Patient' : 'Create Patient'}
+                        <Button
+                            type="submit"
+                            disabled={formProcessing || processing}
+                        >
+                            {formProcessing || processing
+                                ? 'Saving...'
+                                : patient
+                                  ? 'Update Patient'
+                                  : 'Create Patient'}
                         </Button>
                     </div>
                 </>
@@ -192,4 +216,3 @@ export function PatientForm({ patient, route, processing = false }: PatientFormP
         </Form>
     );
 }
-

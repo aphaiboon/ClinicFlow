@@ -1,7 +1,7 @@
+import { dashboard as superAdminDashboard } from '@/routes/super-admin';
 import { Head } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 import AppSidebarLayout from './app/app-sidebar-layout';
-import { dashboard as superAdminDashboard } from '@/routes/super-admin';
 
 interface SuperAdminLayoutProps {
     title?: string;
@@ -25,4 +25,3 @@ export default function SuperAdminLayout({
         </AppSidebarLayout>
     );
 }
-

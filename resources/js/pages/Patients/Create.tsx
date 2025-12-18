@@ -1,8 +1,8 @@
 import { PatientForm } from '@/components/patients/PatientForm';
 import AppLayout from '@/layouts/app-layout';
+import { index, store } from '@/routes/patients';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { store, index } from '@/routes/patients';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,7 +26,9 @@ export default function Create() {
 
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Create Patient</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Create Patient
+                    </h1>
                     <p className="text-muted-foreground">
                         Add a new patient to the system
                     </p>

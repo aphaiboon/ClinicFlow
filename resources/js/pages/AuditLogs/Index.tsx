@@ -1,13 +1,7 @@
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { type AuditLog } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { index } from '@/routes/audit-logs';
-import { useCallback, useState } from 'react';
 import {
     Select,
     SelectContent,
@@ -15,6 +9,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
+import { index } from '@/routes/audit-logs';
+import { type AuditLog, type BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
+import { useCallback, useState } from 'react';
 
 interface AuditLogsIndexProps {
     auditLogs: {
@@ -47,7 +46,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
-    const [resourceType, setResourceType] = useState(filters?.resource_type || '');
+    const [resourceType, setResourceType] = useState(
+        filters?.resource_type || '',
+    );
     const [action, setAction] = useState(filters?.action || '');
     const [dateFrom, setDateFrom] = useState(filters?.date_from || '');
     const [dateTo, setDateTo] = useState(filters?.date_to || '');
@@ -68,7 +69,9 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
 
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Audit Logs
+                    </h1>
                     <p className="text-muted-foreground">
                         View system activity and audit trail
                     </p>
@@ -82,31 +85,55 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
                         <div className="grid gap-4 md:grid-cols-4">
                             <div className="grid gap-2">
                                 <Label>Resource Type</Label>
-                                <Select value={resourceType} onValueChange={setResourceType}>
+                                <Select
+                                    value={resourceType}
+                                    onValueChange={setResourceType}
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder="All types" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Types</SelectItem>
-                                        <SelectItem value="App\\Models\\Patient">Patient</SelectItem>
-                                        <SelectItem value="App\\Models\\Appointment">Appointment</SelectItem>
-                                        <SelectItem value="App\\Models\\ExamRoom">Exam Room</SelectItem>
+                                        <SelectItem value="">
+                                            All Types
+                                        </SelectItem>
+                                        <SelectItem value="App\\Models\\Patient">
+                                            Patient
+                                        </SelectItem>
+                                        <SelectItem value="App\\Models\\Appointment">
+                                            Appointment
+                                        </SelectItem>
+                                        <SelectItem value="App\\Models\\ExamRoom">
+                                            Exam Room
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="grid gap-2">
                                 <Label>Action</Label>
-                                <Select value={action} onValueChange={setAction}>
+                                <Select
+                                    value={action}
+                                    onValueChange={setAction}
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder="All actions" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Actions</SelectItem>
-                                        <SelectItem value="create">Create</SelectItem>
-                                        <SelectItem value="read">Read</SelectItem>
-                                        <SelectItem value="update">Update</SelectItem>
-                                        <SelectItem value="delete">Delete</SelectItem>
+                                        <SelectItem value="">
+                                            All Actions
+                                        </SelectItem>
+                                        <SelectItem value="create">
+                                            Create
+                                        </SelectItem>
+                                        <SelectItem value="read">
+                                            Read
+                                        </SelectItem>
+                                        <SelectItem value="update">
+                                            Update
+                                        </SelectItem>
+                                        <SelectItem value="delete">
+                                            Delete
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -116,7 +143,9 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
                                 <Input
                                     type="date"
                                     value={dateFrom}
-                                    onChange={(e) => setDateFrom(e.target.value)}
+                                    onChange={(e) =>
+                                        setDateFrom(e.target.value)
+                                    }
                                 />
                             </div>
 
@@ -130,7 +159,9 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
                             </div>
                         </div>
                         <div className="mt-4">
-                            <Button onClick={applyFilters}>Apply Filters</Button>
+                            <Button onClick={applyFilters}>
+                                Apply Filters
+                            </Button>
                         </div>
                     </CardContent>
                 </Card>
@@ -157,10 +188,15 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
                                                     href={`/audit-logs/${log.id}`}
                                                     className="font-medium hover:underline"
                                                 >
-                                                    {log.action} - {log.resource_type} #{log.resource_id}
+                                                    {log.action} -{' '}
+                                                    {log.resource_type} #
+                                                    {log.resource_id}
                                                 </Link>
                                                 <div className="text-sm text-muted-foreground">
-                                                    {log.user?.name} • {new Date(log.created_at).toLocaleString()}
+                                                    {log.user?.name} •{' '}
+                                                    {new Date(
+                                                        log.created_at,
+                                                    ).toLocaleString()}
                                                 </div>
                                                 {log.ip_address && (
                                                     <div className="text-xs text-muted-foreground">
@@ -180,7 +216,9 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
                                                     <span
                                                         key={index}
                                                         className="px-3 py-2 text-sm text-muted-foreground"
-                                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: link.label,
+                                                        }}
                                                     />
                                                 );
                                             }
@@ -189,12 +227,14 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
                                                 <Link
                                                     key={index}
                                                     href={link.url}
-                                                    className={`px-3 py-2 text-sm rounded-md ${
+                                                    className={`rounded-md px-3 py-2 text-sm ${
                                                         link.active
                                                             ? 'bg-primary text-primary-foreground'
                                                             : 'hover:bg-accent'
                                                     }`}
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: link.label,
+                                                    }}
                                                 />
                                             );
                                         })}

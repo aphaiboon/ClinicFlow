@@ -1,11 +1,11 @@
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Form } from '@inertiajs/react';
 import { type ExamRoom } from '@/types';
 import { type RouteDefinition } from '@/wayfinder';
+import { Form } from '@inertiajs/react';
 import { useState } from 'react';
 
 interface ExamRoomFormProps {
@@ -14,7 +14,11 @@ interface ExamRoomFormProps {
     processing?: boolean;
 }
 
-export function ExamRoomForm({ room, route, processing = false }: ExamRoomFormProps) {
+export function ExamRoomForm({
+    room,
+    route,
+    processing = false,
+}: ExamRoomFormProps) {
     const [equipment, setEquipment] = useState<string[]>(room?.equipment || []);
     const [newEquipment, setNewEquipment] = useState('');
     const [isActive, setIsActive] = useState(room?.is_active ?? true);
@@ -35,9 +39,18 @@ export function ExamRoomForm({ room, route, processing = false }: ExamRoomFormPr
             {({ processing: formProcessing, errors }) => (
                 <>
                     {equipment.map((item, index) => (
-                        <input key={index} type="hidden" name={`equipment[${index}]`} value={item} />
+                        <input
+                            key={index}
+                            type="hidden"
+                            name={`equipment[${index}]`}
+                            value={item}
+                        />
                     ))}
-                    <input type="hidden" name="is_active" value={isActive ? '1' : '0'} />
+                    <input
+                        type="hidden"
+                        name="is_active"
+                        value={isActive ? '1' : '0'}
+                    />
 
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="grid gap-2">
@@ -95,7 +108,10 @@ export function ExamRoomForm({ room, route, processing = false }: ExamRoomFormPr
                         <Label>Equipment</Label>
                         <div className="space-y-2">
                             {equipment.map((item, index) => (
-                                <div key={index} className="flex items-center justify-between rounded-md border p-2">
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between rounded-md border p-2"
+                                >
                                     <span>{item}</span>
                                     <Button
                                         type="button"
@@ -110,7 +126,9 @@ export function ExamRoomForm({ room, route, processing = false }: ExamRoomFormPr
                             <div className="flex gap-2">
                                 <Input
                                     value={newEquipment}
-                                    onChange={(e) => setNewEquipment(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewEquipment(e.target.value)
+                                    }
                                     placeholder="Add equipment item"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
@@ -119,7 +137,11 @@ export function ExamRoomForm({ room, route, processing = false }: ExamRoomFormPr
                                         }
                                     }}
                                 />
-                                <Button type="button" variant="outline" onClick={addEquipment}>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={addEquipment}
+                                >
                                     Add
                                 </Button>
                             </div>
@@ -131,9 +153,14 @@ export function ExamRoomForm({ room, route, processing = false }: ExamRoomFormPr
                         <Checkbox
                             id="is_active"
                             checked={isActive}
-                            onCheckedChange={(checked) => setIsActive(checked === true)}
+                            onCheckedChange={(checked) =>
+                                setIsActive(checked === true)
+                            }
                         />
-                        <Label htmlFor="is_active" className="font-normal cursor-pointer">
+                        <Label
+                            htmlFor="is_active"
+                            className="cursor-pointer font-normal"
+                        >
                             Active
                         </Label>
                     </div>
@@ -145,13 +172,16 @@ export function ExamRoomForm({ room, route, processing = false }: ExamRoomFormPr
                             name="notes"
                             defaultValue={room?.notes}
                             rows={4}
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         <InputError message={errors.notes} />
                     </div>
 
                     <div className="flex gap-4">
-                        <Button type="submit" disabled={formProcessing || processing}>
+                        <Button
+                            type="submit"
+                            disabled={formProcessing || processing}
+                        >
                             {formProcessing || processing
                                 ? 'Saving...'
                                 : room

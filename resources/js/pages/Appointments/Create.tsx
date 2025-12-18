@@ -1,8 +1,13 @@
 import { AppointmentForm } from '@/components/appointments/AppointmentForm';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Patient, type User, type ExamRoom } from '@/types';
+import { index, store } from '@/routes/appointments';
+import {
+    type BreadcrumbItem,
+    type ExamRoom,
+    type Patient,
+    type User,
+} from '@/types';
 import { Head } from '@inertiajs/react';
-import { store, index } from '@/routes/appointments';
 
 interface AppointmentsCreateProps {
     patients: Patient[];
@@ -25,14 +30,20 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Create({ patients, clinicians, examRooms }: AppointmentsCreateProps) {
+export default function Create({
+    patients,
+    clinicians,
+    examRooms,
+}: AppointmentsCreateProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Schedule Appointment" />
 
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Schedule Appointment</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Schedule Appointment
+                    </h1>
                     <p className="text-muted-foreground">
                         Create a new appointment
                     </p>

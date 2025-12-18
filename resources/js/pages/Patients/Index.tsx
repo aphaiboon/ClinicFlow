@@ -1,11 +1,10 @@
+import { SearchInput } from '@/components/shared/SearchInput';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SearchInput } from '@/components/shared/SearchInput';
-import { type Patient } from '@/types';
-import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { store, index } from '@/routes/patients';
+import { index, store } from '@/routes/patients';
+import { type BreadcrumbItem, type Patient } from '@/types';
+import { Head, Link } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
 
 interface PatientsIndexProps {
@@ -35,7 +34,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Index({ patients, filters }: PatientsIndexProps) {
     const page = usePage();
-    const currentSearch = (filters?.search || (page.url.includes('search=') ? new URLSearchParams(page.url.split('?')[1]).get('search') : '')) as string;
+    const currentSearch = (filters?.search ||
+        (page.url.includes('search=')
+            ? new URLSearchParams(page.url.split('?')[1]).get('search')
+            : '')) as string;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -44,7 +46,9 @@ export default function Index({ patients, filters }: PatientsIndexProps) {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Patients</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Patients
+                        </h1>
                         <p className="text-muted-foreground">
                             Manage patient records
                         </p>
@@ -62,7 +66,10 @@ export default function Index({ patients, filters }: PatientsIndexProps) {
                         <div className="flex items-center justify-between">
                             <CardTitle>All Patients</CardTitle>
                             <div className="w-64">
-                                <SearchInput placeholder="Search patients..." defaultValue={currentSearch} />
+                                <SearchInput
+                                    placeholder="Search patients..."
+                                    defaultValue={currentSearch}
+                                />
                             </div>
                         </div>
                     </CardHeader>
@@ -84,10 +91,13 @@ export default function Index({ patients, filters }: PatientsIndexProps) {
                                                     href={`/patients/${patient.id}`}
                                                     className="text-lg font-semibold hover:underline"
                                                 >
-                                                    {patient.first_name} {patient.last_name}
+                                                    {patient.first_name}{' '}
+                                                    {patient.last_name}
                                                 </Link>
                                                 <p className="text-sm text-muted-foreground">
-                                                    {patient.medical_record_number}
+                                                    {
+                                                        patient.medical_record_number
+                                                    }
                                                 </p>
                                                 {patient.email && (
                                                     <p className="text-sm text-muted-foreground">
@@ -95,8 +105,13 @@ export default function Index({ patients, filters }: PatientsIndexProps) {
                                                     </p>
                                                 )}
                                             </div>
-                                            <Link href={`/patients/${patient.id}/edit`}>
-                                                <Button variant="outline" size="sm">
+                                            <Link
+                                                href={`/patients/${patient.id}/edit`}
+                                            >
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
                                                     Edit
                                                 </Button>
                                             </Link>
@@ -112,7 +127,9 @@ export default function Index({ patients, filters }: PatientsIndexProps) {
                                                     <span
                                                         key={index}
                                                         className="px-3 py-2 text-sm text-muted-foreground"
-                                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: link.label,
+                                                        }}
                                                     />
                                                 );
                                             }
@@ -121,12 +138,14 @@ export default function Index({ patients, filters }: PatientsIndexProps) {
                                                 <Link
                                                     key={index}
                                                     href={link.url}
-                                                    className={`px-3 py-2 text-sm rounded-md ${
+                                                    className={`rounded-md px-3 py-2 text-sm ${
                                                         link.active
                                                             ? 'bg-primary text-primary-foreground'
                                                             : 'hover:bg-accent'
                                                     }`}
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: link.label,
+                                                    }}
                                                 />
                                             );
                                         })}

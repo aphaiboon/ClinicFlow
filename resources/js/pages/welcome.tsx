@@ -1,10 +1,10 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { login } from '@/routes';
 import { register } from '@/routes/organization';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Building, Users, Activity } from 'lucide-react';
+import { Activity, Building, Calendar, Users } from 'lucide-react';
 
 export default function Welcome({
     canRegister = true,
@@ -21,25 +21,29 @@ export default function Welcome({
         {
             icon: Users,
             title: 'Patient Management',
-            description: 'Register and manage patient records with comprehensive demographic information',
+            description:
+                'Register and manage patient records with comprehensive demographic information',
             color: 'text-[#1bc3bb]',
         },
         {
             icon: Calendar,
             title: 'Appointment Scheduling',
-            description: 'Schedule, reschedule, and manage patient appointments efficiently',
+            description:
+                'Schedule, reschedule, and manage patient appointments efficiently',
             color: 'text-[#F1903C]',
         },
         {
             icon: Building,
             title: 'Exam Room Management',
-            description: 'Assign patients to exam rooms and track room availability',
+            description:
+                'Assign patients to exam rooms and track room availability',
             color: 'text-[#806954]',
         },
         {
             icon: Activity,
             title: 'Audit & Compliance',
-            description: 'Complete audit trails and compliance-ready logging for healthcare operations',
+            description:
+                'Complete audit trails and compliance-ready logging for healthcare operations',
             color: 'text-[#F2B064]',
         },
     ];
@@ -59,7 +63,7 @@ export default function Welcome({
                             <img
                                 src="/images/clinicflow-text-logo.png"
                                 alt="ClinicFlow"
-                                className="h-6 hidden sm:block"
+                                className="hidden h-6 sm:block dark:invert"
                             />
                         </Link>
                         <nav className="flex items-center gap-3">
@@ -67,7 +71,11 @@ export default function Welcome({
                                 <Link href={login()}>Sign In</Link>
                             </Button>
                             {canRegister && (
-                                <Button asChild size="sm" className="bg-[#F1903C] hover:bg-[#F1903C]/90 text-white">
+                                <Button
+                                    asChild
+                                    size="sm"
+                                    className="bg-[#F1903C] text-white hover:bg-[#F1903C]/90"
+                                >
                                     <Link href={register()}>Register</Link>
                                 </Button>
                             )}
@@ -78,20 +86,33 @@ export default function Welcome({
                 <main className="flex flex-1 flex-col">
                     <section className="flex flex-1 items-center justify-center px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
                         <div className="w-full max-w-6xl">
-                            <div className="text-center mb-16">
-                                <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl text-foreground">
+                            <div className="mb-16 text-center">
+                                <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
                                     Streamline Your Clinic Operations
                                 </h1>
                                 <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-                                    Comprehensive patient management, appointment scheduling, and exam room coordination for healthcare professionals.
+                                    Comprehensive patient management,
+                                    appointment scheduling, and exam room
+                                    coordination for healthcare professionals.
                                 </p>
                                 <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                                    <Button asChild size="lg" className="bg-[#1bc3bb] hover:bg-[#1bc3bb]/90 text-white px-8">
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        className="bg-[#1bc3bb] px-8 text-white hover:bg-[#1bc3bb]/90"
+                                    >
                                         <Link href={login()}>Sign In</Link>
                                     </Button>
                                     {canRegister && (
-                                        <Button asChild size="lg" variant="outline" className="border-2 border-[#323d47] text-[#323d47] hover:bg-[#323d47] hover:text-white px-8">
-                                            <Link href={register()}>Create Account</Link>
+                                        <Button
+                                            asChild
+                                            size="lg"
+                                            variant="outline"
+                                            className="border-2 border-[#323d47] px-8 text-[#323d47] hover:bg-[#323d47] hover:text-white"
+                                        >
+                                            <Link href={register()}>
+                                                Create Account
+                                            </Link>
                                         </Button>
                                     )}
                                 </div>
@@ -103,16 +124,20 @@ export default function Welcome({
                                     return (
                                         <Card
                                             key={feature.title}
-                                            className="border-2 border-border hover:border-[#1bc3bb]/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+                                            className="border-2 border-border transition-all duration-300 hover:-translate-y-1 hover:border-[#1bc3bb]/30 hover:shadow-lg"
                                         >
                                             <CardContent className="p-6 text-center">
                                                 <div className="mb-4 flex justify-center">
-                                                    <div className={`flex size-14 items-center justify-center rounded-xl bg-background ${feature.color}`}>
+                                                    <div
+                                                        className={`flex size-14 items-center justify-center rounded-xl bg-background ${feature.color}`}
+                                                    >
                                                         <Icon className="size-7" />
                                                     </div>
                                                 </div>
-                                                <h3 className="mb-2 text-lg font-semibold text-foreground">{feature.title}</h3>
-                                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                                <h3 className="mb-2 text-lg font-semibold text-foreground">
+                                                    {feature.title}
+                                                </h3>
+                                                <p className="text-sm leading-relaxed text-muted-foreground">
                                                     {feature.description}
                                                 </p>
                                             </CardContent>
@@ -127,8 +152,8 @@ export default function Welcome({
                 <footer className="border-t border-border bg-card/30 py-6">
                     <div className="container mx-auto px-4 text-center text-sm text-muted-foreground sm:px-6 lg:px-8">
                         <p>
-                            ClinicFlow - Healthcare clinic management system. Designed for demonstration and
-                            educational purposes.
+                            ClinicFlow - Healthcare clinic management system.
+                            Designed for demonstration and educational purposes.
                         </p>
                     </div>
                 </footer>

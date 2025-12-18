@@ -1,6 +1,6 @@
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -9,12 +9,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { type Appointment, type User } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { store, index } from '@/routes/appointments';
-import { Plus, Calendar, Clock, User as UserIcon } from 'lucide-react';
+import { index, store } from '@/routes/appointments';
+import { type Appointment, type BreadcrumbItem, type User } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
+import { Calendar, Clock, Plus, User as UserIcon } from 'lucide-react';
 import { useState } from 'react';
 
 interface AppointmentsIndexProps {
@@ -45,10 +44,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Index({ appointments, filters, clinicians }: AppointmentsIndexProps) {
+export default function Index({
+    appointments,
+    filters,
+    clinicians,
+}: AppointmentsIndexProps) {
     const [statusFilter, setStatusFilter] = useState(filters?.status || '');
     const [dateFilter, setDateFilter] = useState(filters?.date || '');
-    const [clinicianFilter, setClinicianFilter] = useState(filters?.clinician_id || '');
+    const [clinicianFilter, setClinicianFilter] = useState(
+        filters?.clinician_id || '',
+    );
 
     const applyFilters = () => {
         const params: Record<string, string> = {};
@@ -66,7 +71,9 @@ export default function Index({ appointments, filters, clinicians }: Appointment
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Appointments
+                        </h1>
                         <p className="text-muted-foreground">
                             Manage appointments and schedules
                         </p>
@@ -86,41 +93,72 @@ export default function Index({ appointments, filters, clinicians }: Appointment
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-4">
                             <div className="grid gap-2">
-                                <label className="text-sm font-medium">Status</label>
-                                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <label className="text-sm font-medium">
+                                    Status
+                                </label>
+                                <Select
+                                    value={statusFilter}
+                                    onValueChange={setStatusFilter}
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder="All statuses" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Statuses</SelectItem>
-                                        <SelectItem value="scheduled">Scheduled</SelectItem>
-                                        <SelectItem value="in_progress">In Progress</SelectItem>
-                                        <SelectItem value="completed">Completed</SelectItem>
-                                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                                        <SelectItem value="no_show">No Show</SelectItem>
+                                        <SelectItem value="">
+                                            All Statuses
+                                        </SelectItem>
+                                        <SelectItem value="scheduled">
+                                            Scheduled
+                                        </SelectItem>
+                                        <SelectItem value="in_progress">
+                                            In Progress
+                                        </SelectItem>
+                                        <SelectItem value="completed">
+                                            Completed
+                                        </SelectItem>
+                                        <SelectItem value="cancelled">
+                                            Cancelled
+                                        </SelectItem>
+                                        <SelectItem value="no_show">
+                                            No Show
+                                        </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
 
                             <div className="grid gap-2">
-                                <label className="text-sm font-medium">Date</label>
+                                <label className="text-sm font-medium">
+                                    Date
+                                </label>
                                 <Input
                                     type="date"
                                     value={dateFilter}
-                                    onChange={(e) => setDateFilter(e.target.value)}
+                                    onChange={(e) =>
+                                        setDateFilter(e.target.value)
+                                    }
                                 />
                             </div>
 
                             <div className="grid gap-2">
-                                <label className="text-sm font-medium">Clinician</label>
-                                <Select value={clinicianFilter} onValueChange={setClinicianFilter}>
+                                <label className="text-sm font-medium">
+                                    Clinician
+                                </label>
+                                <Select
+                                    value={clinicianFilter}
+                                    onValueChange={setClinicianFilter}
+                                >
                                     <SelectTrigger>
                                         <SelectValue placeholder="All clinicians" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">All Clinicians</SelectItem>
+                                        <SelectItem value="">
+                                            All Clinicians
+                                        </SelectItem>
                                         {clinicians.map((clinician) => (
-                                            <SelectItem key={clinician.id} value={clinician.id.toString()}>
+                                            <SelectItem
+                                                key={clinician.id}
+                                                value={clinician.id.toString()}
+                                            >
                                                 {clinician.name}
                                             </SelectItem>
                                         ))}
@@ -129,7 +167,10 @@ export default function Index({ appointments, filters, clinicians }: Appointment
                             </div>
 
                             <div className="flex items-end">
-                                <Button onClick={applyFilters} className="w-full">
+                                <Button
+                                    onClick={applyFilters}
+                                    className="w-full"
+                                >
                                     Apply Filters
                                 </Button>
                             </div>
@@ -159,31 +200,59 @@ export default function Index({ appointments, filters, clinicians }: Appointment
                                                     href={`/appointments/${appointment.id}`}
                                                     className="text-lg font-semibold hover:underline"
                                                 >
-                                                    {appointment.patient?.first_name} {appointment.patient?.last_name}
+                                                    {
+                                                        appointment.patient
+                                                            ?.first_name
+                                                    }{' '}
+                                                    {
+                                                        appointment.patient
+                                                            ?.last_name
+                                                    }
                                                 </Link>
                                                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                                     <div className="flex items-center gap-2">
                                                         <Calendar className="size-4" />
                                                         <span>
-                                                            {new Date(appointment.appointment_date).toLocaleDateString()}
+                                                            {new Date(
+                                                                appointment.appointment_date,
+                                                            ).toLocaleDateString()}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Clock className="size-4" />
-                                                        <span>{appointment.appointment_time}</span>
+                                                        <span>
+                                                            {
+                                                                appointment.appointment_time
+                                                            }
+                                                        </span>
                                                     </div>
                                                     {appointment.user && (
                                                         <div className="flex items-center gap-2">
                                                             <UserIcon className="size-4" />
-                                                            <span>{appointment.user.name}</span>
+                                                            <span>
+                                                                {
+                                                                    appointment
+                                                                        .user
+                                                                        .name
+                                                                }
+                                                            </span>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <StatusBadge status={appointment.status as AppointmentStatus} />
-                                                <Link href={`/appointments/${appointment.id}/edit`}>
-                                                    <Button variant="outline" size="sm">
+                                                <StatusBadge
+                                                    status={
+                                                        appointment.status as AppointmentStatus
+                                                    }
+                                                />
+                                                <Link
+                                                    href={`/appointments/${appointment.id}/edit`}
+                                                >
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
                                                         Edit
                                                     </Button>
                                                 </Link>
@@ -194,30 +263,36 @@ export default function Index({ appointments, filters, clinicians }: Appointment
 
                                 {appointments.last_page > 1 && (
                                     <div className="mt-6 flex items-center justify-center gap-2">
-                                        {appointments.links.map((link, index) => {
-                                            if (link.url === null) {
+                                        {appointments.links.map(
+                                            (link, index) => {
+                                                if (link.url === null) {
+                                                    return (
+                                                        <span
+                                                            key={index}
+                                                            className="px-3 py-2 text-sm text-muted-foreground"
+                                                            dangerouslySetInnerHTML={{
+                                                                __html: link.label,
+                                                            }}
+                                                        />
+                                                    );
+                                                }
+
                                                 return (
-                                                    <span
+                                                    <Link
                                                         key={index}
-                                                        className="px-3 py-2 text-sm text-muted-foreground"
-                                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                                        href={link.url}
+                                                        className={`rounded-md px-3 py-2 text-sm ${
+                                                            link.active
+                                                                ? 'bg-primary text-primary-foreground'
+                                                                : 'hover:bg-accent'
+                                                        }`}
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: link.label,
+                                                        }}
                                                     />
                                                 );
-                                            }
-
-                                            return (
-                                                <Link
-                                                    key={index}
-                                                    href={link.url}
-                                                    className={`px-3 py-2 text-sm rounded-md ${
-                                                        link.active
-                                                            ? 'bg-primary text-primary-foreground'
-                                                            : 'hover:bg-accent'
-                                                    }`}
-                                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                                />
-                                            );
-                                        })}
+                                            },
+                                        )}
                                     </div>
                                 )}
                             </>

@@ -1,8 +1,8 @@
 import { ExamRoomForm } from '@/components/exam-rooms/ExamRoomForm';
 import AppLayout from '@/layouts/app-layout';
+import { index, show, update } from '@/routes/exam-rooms';
 import { type BreadcrumbItem, type ExamRoom } from '@/types';
 import { Head } from '@inertiajs/react';
-import { index, update, show } from '@/routes/exam-rooms';
 
 interface ExamRoomsEditProps {
     room: ExamRoom;
@@ -49,4 +49,3 @@ export default function Edit({ room }: ExamRoomsEditProps) {
         </AppLayout>
     );
 }
-

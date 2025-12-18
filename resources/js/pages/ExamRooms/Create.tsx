@@ -1,8 +1,8 @@
 import { ExamRoomForm } from '@/components/exam-rooms/ExamRoomForm';
 import AppLayout from '@/layouts/app-layout';
+import { index, store } from '@/routes/exam-rooms';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { store, index } from '@/routes/exam-rooms';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -26,7 +26,9 @@ export default function Create() {
 
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Create Exam Room</h1>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Create Exam Room
+                    </h1>
                     <p className="text-muted-foreground">
                         Add a new exam room to the system
                     </p>

@@ -1,5 +1,3 @@
-import { router } from '@inertiajs/react';
-import { Building, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -7,9 +5,10 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { usePage } from '@inertiajs/react';
-import { type SharedData } from '@/types';
 import * as organizationRoutes from '@/routes/organizations';
+import { type SharedData } from '@/types';
+import { router, usePage } from '@inertiajs/react';
+import { Building, Check } from 'lucide-react';
 
 interface Organization {
     id: number;
@@ -21,7 +20,10 @@ interface Props {
     currentOrganization?: Organization | null;
 }
 
-export default function OrganizationSwitcher({ organizations = [], currentOrganization }: Props) {
+export default function OrganizationSwitcher({
+    organizations = [],
+    currentOrganization,
+}: Props) {
     const { auth } = usePage<SharedData>().props;
 
     if (!auth.user || organizations.length <= 1) {
@@ -29,10 +31,14 @@ export default function OrganizationSwitcher({ organizations = [], currentOrgani
     }
 
     const handleSwitch = (organizationId: number) => {
-        router.post(organizationRoutes.switch({ organization: organizationId }).url, {}, {
-            preserveScroll: true,
-            preserveState: false,
-        });
+        router.post(
+            organizationRoutes.switch({ organization: organizationId }).url,
+            {},
+            {
+                preserveScroll: true,
+                preserveState: false,
+            },
+        );
     };
 
     return (
@@ -62,4 +68,3 @@ export default function OrganizationSwitcher({ organizations = [], currentOrgani
         </DropdownMenu>
     );
 }
-

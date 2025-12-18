@@ -1,12 +1,18 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import { edit, index } from '@/routes/exam-rooms';
 import { type BreadcrumbItem, type ExamRoom } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { index, edit } from '@/routes/exam-rooms';
-import { Pencil, MapPin, Calendar, Clock, User } from 'lucide-react';
+import { Calendar, Clock, MapPin, Pencil, User } from 'lucide-react';
 import { useCallback } from 'react';
 
 interface ExamRoomsShowProps {
@@ -30,21 +36,29 @@ const breadcrumbs = (room: ExamRoom): BreadcrumbItem[] => [
 
 export default function Show({ room }: ExamRoomsShowProps) {
     const handleActivate = useCallback(() => {
-        router.post(`/exam-rooms/${room.id}/activate`, {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                router.reload();
+        router.post(
+            `/exam-rooms/${room.id}/activate`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    router.reload();
+                },
             },
-        });
+        );
     }, [room.id]);
 
     const handleDeactivate = useCallback(() => {
-        router.post(`/exam-rooms/${room.id}/deactivate`, {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                router.reload();
+        router.post(
+            `/exam-rooms/${room.id}/deactivate`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    router.reload();
+                },
             },
-        });
+        );
     }, [room.id]);
 
     return (
@@ -54,12 +68,18 @@ export default function Show({ room }: ExamRoomsShowProps) {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">{room.name}</h1>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            {room.name}
+                        </h1>
                         <div className="mt-2 flex items-center gap-4">
-                            <Badge variant={room.is_active ? 'default' : 'secondary'}>
+                            <Badge
+                                variant={
+                                    room.is_active ? 'default' : 'secondary'
+                                }
+                            >
                                 {room.is_active ? 'Active' : 'Inactive'}
                             </Badge>
-                            <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
                                 <MapPin className="size-4" />
                                 {room.room_number}
                                 {room.floor && ` • Floor ${room.floor}`}
@@ -74,13 +94,14 @@ export default function Show({ room }: ExamRoomsShowProps) {
                             </Button>
                         </Link>
                         {room.is_active ? (
-                            <Button variant="outline" onClick={handleDeactivate}>
+                            <Button
+                                variant="outline"
+                                onClick={handleDeactivate}
+                            >
                                 Deactivate
                             </Button>
                         ) : (
-                            <Button onClick={handleActivate}>
-                                Activate
-                            </Button>
+                            <Button onClick={handleActivate}>Activate</Button>
                         )}
                     </div>
                 </div>
@@ -92,23 +113,34 @@ export default function Show({ room }: ExamRoomsShowProps) {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <div className="text-sm font-medium text-muted-foreground">Room Number</div>
+                                <div className="text-sm font-medium text-muted-foreground">
+                                    Room Number
+                                </div>
                                 <div>{room.room_number}</div>
                             </div>
                             {room.floor && (
                                 <div>
-                                    <div className="text-sm font-medium text-muted-foreground">Floor</div>
+                                    <div className="text-sm font-medium text-muted-foreground">
+                                        Floor
+                                    </div>
                                     <div>Floor {room.floor}</div>
                                 </div>
                             )}
                             <div>
-                                <div className="text-sm font-medium text-muted-foreground">Capacity</div>
-                                <div>{room.capacity} {room.capacity === 1 ? 'person' : 'people'}</div>
+                                <div className="text-sm font-medium text-muted-foreground">
+                                    Capacity
+                                </div>
+                                <div>
+                                    {room.capacity}{' '}
+                                    {room.capacity === 1 ? 'person' : 'people'}
+                                </div>
                             </div>
                             {room.equipment && room.equipment.length > 0 && (
                                 <div>
-                                    <div className="text-sm font-medium text-muted-foreground">Equipment</div>
-                                    <ul className="list-disc list-inside">
+                                    <div className="text-sm font-medium text-muted-foreground">
+                                        Equipment
+                                    </div>
+                                    <ul className="list-inside list-disc">
                                         {room.equipment.map((item, index) => (
                                             <li key={index}>{item}</li>
                                         ))}
@@ -117,7 +149,9 @@ export default function Show({ room }: ExamRoomsShowProps) {
                             )}
                             {room.notes && (
                                 <div>
-                                    <div className="text-sm font-medium text-muted-foreground">Notes</div>
+                                    <div className="text-sm font-medium text-muted-foreground">
+                                        Notes
+                                    </div>
                                     <div>{room.notes}</div>
                                 </div>
                             )}
@@ -129,7 +163,8 @@ export default function Show({ room }: ExamRoomsShowProps) {
                             <CardHeader>
                                 <CardTitle>Appointments</CardTitle>
                                 <CardDescription>
-                                    {room.appointments.length} appointment{room.appointments.length !== 1 ? 's' : ''}
+                                    {room.appointments.length} appointment
+                                    {room.appointments.length !== 1 ? 's' : ''}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -144,28 +179,51 @@ export default function Show({ room }: ExamRoomsShowProps) {
                                                     href={`/appointments/${appointment.id}`}
                                                     className="font-medium hover:underline"
                                                 >
-                                                    {appointment.patient?.first_name} {appointment.patient?.last_name}
+                                                    {
+                                                        appointment.patient
+                                                            ?.first_name
+                                                    }{' '}
+                                                    {
+                                                        appointment.patient
+                                                            ?.last_name
+                                                    }
                                                 </Link>
                                                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                                     <div className="flex items-center gap-2">
                                                         <Calendar className="size-4" />
                                                         <span>
-                                                            {new Date(appointment.appointment_date).toLocaleDateString()}
+                                                            {new Date(
+                                                                appointment.appointment_date,
+                                                            ).toLocaleDateString()}
                                                         </span>
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <Clock className="size-4" />
-                                                        <span>{appointment.appointment_time}</span>
+                                                        <span>
+                                                            {
+                                                                appointment.appointment_time
+                                                            }
+                                                        </span>
                                                     </div>
                                                     {appointment.user && (
                                                         <div className="flex items-center gap-2">
                                                             <User className="size-4" />
-                                                            <span>{appointment.user.name}</span>
+                                                            <span>
+                                                                {
+                                                                    appointment
+                                                                        .user
+                                                                        .name
+                                                                }
+                                                            </span>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
-                                            <StatusBadge status={appointment.status as AppointmentStatus} />
+                                            <StatusBadge
+                                                status={
+                                                    appointment.status as AppointmentStatus
+                                                }
+                                            />
                                         </div>
                                     ))}
                                 </div>

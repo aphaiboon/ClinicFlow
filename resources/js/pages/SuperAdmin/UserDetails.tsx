@@ -1,8 +1,14 @@
-import { Head } from '@inertiajs/react';
-import { User as UserIcon, Building, Mail } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout';
+import { Head } from '@inertiajs/react';
+import { Building, Mail, User as UserIcon } from 'lucide-react';
 
 interface Organization {
     id: number;
@@ -33,10 +39,20 @@ export default function UserDetails({ user }: Props) {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">{user.name}</h1>
-                        <p className="text-muted-foreground mt-2">{user.email}</p>
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            {user.name}
+                        </h1>
+                        <p className="mt-2 text-muted-foreground">
+                            {user.email}
+                        </p>
                     </div>
-                    <Badge variant={user.role === 'super_admin' ? 'default' : 'secondary'}>
+                    <Badge
+                        variant={
+                            user.role === 'super_admin'
+                                ? 'default'
+                                : 'secondary'
+                        }
+                    >
                         {user.role}
                     </Badge>
                 </div>
@@ -66,7 +82,9 @@ export default function UserDetails({ user }: Props) {
                             <CardContent>
                                 <div className="flex items-center gap-2">
                                     <Building className="h-4 w-4 text-muted-foreground" />
-                                    <span>{user.current_organization.name}</span>
+                                    <span>
+                                        {user.current_organization.name}
+                                    </span>
                                 </div>
                             </CardContent>
                         </Card>
@@ -77,18 +95,25 @@ export default function UserDetails({ user }: Props) {
                     <Card>
                         <CardHeader>
                             <CardTitle>Organizations</CardTitle>
-                            <CardDescription>Organizations this user belongs to</CardDescription>
+                            <CardDescription>
+                                Organizations this user belongs to
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
                                 {user.organizations.map((org) => (
-                                    <div key={org.id} className="flex items-center justify-between">
+                                    <div
+                                        key={org.id}
+                                        className="flex items-center justify-between"
+                                    >
                                         <div className="flex items-center gap-2">
                                             <Building className="h-4 w-4 text-muted-foreground" />
                                             <span>{org.name}</span>
                                         </div>
                                         {org.pivot && (
-                                            <Badge variant="outline">{org.pivot.role}</Badge>
+                                            <Badge variant="outline">
+                                                {org.pivot.role}
+                                            </Badge>
                                         )}
                                     </div>
                                 ))}
@@ -100,4 +125,3 @@ export default function UserDetails({ user }: Props) {
         </SuperAdminLayout>
     );
 }
-

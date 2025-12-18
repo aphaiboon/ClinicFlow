@@ -1,5 +1,4 @@
 import { login } from '@/routes';
-import { organizationRegisterStore } from '@/routes/organization-register';
 import { Form, Head } from '@inertiajs/react';
 
 import InputError from '@/components/input-error';
@@ -27,12 +26,14 @@ export default function OrganizationRegister() {
                     <>
                         <div className="space-y-6">
                             <div>
-                                <h2 className="text-lg font-semibold text-foreground mb-4">
+                                <h2 className="mb-4 text-lg font-semibold text-foreground">
                                     Clinic Information
                                 </h2>
                                 <div className="grid gap-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="name">Clinic Name *</Label>
+                                        <Label htmlFor="name">
+                                            Clinic Name *
+                                        </Label>
                                         <Input
                                             id="name"
                                             type="text"
@@ -42,11 +43,16 @@ export default function OrganizationRegister() {
                                             name="name"
                                             placeholder="Your Clinic Name"
                                         />
-                                        <InputError message={errors.name} className="mt-2" />
+                                        <InputError
+                                            message={errors.name}
+                                            className="mt-2"
+                                        />
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="email">Clinic Email</Label>
+                                        <Label htmlFor="email">
+                                            Clinic Email
+                                        </Label>
                                         <Input
                                             id="email"
                                             type="email"
@@ -72,12 +78,14 @@ export default function OrganizationRegister() {
                             </div>
 
                             <div>
-                                <h2 className="text-lg font-semibold text-foreground mb-4">
+                                <h2 className="mb-4 text-lg font-semibold text-foreground">
                                     Your Account
                                 </h2>
                                 <div className="grid gap-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="user_name">Your Name *</Label>
+                                        <Label htmlFor="user_name">
+                                            Your Name *
+                                        </Label>
                                         <Input
                                             id="user_name"
                                             type="text"
@@ -87,11 +95,16 @@ export default function OrganizationRegister() {
                                             name="user_name"
                                             placeholder="Full name"
                                         />
-                                        <InputError message={errors.user_name} className="mt-2" />
+                                        <InputError
+                                            message={errors.user_name}
+                                            className="mt-2"
+                                        />
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="user_email">Email Address *</Label>
+                                        <Label htmlFor="user_email">
+                                            Email Address *
+                                        </Label>
                                         <Input
                                             id="user_email"
                                             type="email"
@@ -101,11 +114,15 @@ export default function OrganizationRegister() {
                                             name="user_email"
                                             placeholder="email@example.com"
                                         />
-                                        <InputError message={errors.user_email} />
+                                        <InputError
+                                            message={errors.user_email}
+                                        />
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="password">Password *</Label>
+                                        <Label htmlFor="password">
+                                            Password *
+                                        </Label>
                                         <Input
                                             id="password"
                                             type="password"
@@ -131,7 +148,11 @@ export default function OrganizationRegister() {
                                             name="password_confirmation"
                                             placeholder="Confirm password"
                                         />
-                                        <InputError message={errors.password_confirmation} />
+                                        <InputError
+                                            message={
+                                                errors.password_confirmation
+                                            }
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -159,4 +180,3 @@ export default function OrganizationRegister() {
         </AuthLayout>
     );
 }
-

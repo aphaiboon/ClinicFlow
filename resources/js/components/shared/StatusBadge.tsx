@@ -1,14 +1,25 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
-export type AppointmentStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+export type AppointmentStatus =
+    | 'scheduled'
+    | 'in_progress'
+    | 'completed'
+    | 'cancelled'
+    | 'no_show';
 
 interface StatusBadgeProps {
     status: AppointmentStatus;
     className?: string;
 }
 
-const statusConfig: Record<AppointmentStatus, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+const statusConfig: Record<
+    AppointmentStatus,
+    {
+        label: string;
+        variant: 'default' | 'secondary' | 'destructive' | 'outline';
+    }
+> = {
     scheduled: { label: 'Scheduled', variant: 'default' },
     in_progress: { label: 'In Progress', variant: 'secondary' },
     completed: { label: 'Completed', variant: 'outline' },
@@ -24,4 +35,3 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         </Badge>
     );
 }
-

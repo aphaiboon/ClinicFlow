@@ -1,8 +1,14 @@
 import { AppointmentForm } from '@/components/appointments/AppointmentForm';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Appointment, type Patient, type User, type ExamRoom } from '@/types';
+import { index, show, update } from '@/routes/appointments';
+import {
+    type Appointment,
+    type BreadcrumbItem,
+    type ExamRoom,
+    type Patient,
+    type User,
+} from '@/types';
 import { Head } from '@inertiajs/react';
-import { index, update, show } from '@/routes/appointments';
 
 interface AppointmentsEditProps {
     appointment: Appointment;
@@ -30,7 +36,12 @@ const breadcrumbs = (appointment: Appointment): BreadcrumbItem[] => [
     },
 ];
 
-export default function Edit({ appointment, patients, clinicians, examRooms }: AppointmentsEditProps) {
+export default function Edit({
+    appointment,
+    patients,
+    clinicians,
+    examRooms,
+}: AppointmentsEditProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs(appointment)}>
             <Head title={`Edit Appointment #${appointment.id}`} />

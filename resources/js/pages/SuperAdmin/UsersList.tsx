@@ -1,9 +1,15 @@
-import { Head, Link } from '@inertiajs/react';
-import { Users } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout';
 import { show as showUser } from '@/routes/super-admin/users';
+import { Head, Link } from '@inertiajs/react';
+import { Users } from 'lucide-react';
 
 interface Organization {
     id: number;
@@ -35,23 +41,35 @@ export default function UsersList({ users }: Props) {
             <div className="space-y-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-                    <p className="text-muted-foreground mt-2">Manage all users across organizations</p>
+                    <p className="mt-2 text-muted-foreground">
+                        Manage all users across organizations
+                    </p>
                 </div>
 
                 <div className="grid gap-4">
                     {users.data.map((user) => (
                         <Link key={user.id} href={showUser({ user: user.id })}>
-                            <Card className="hover:bg-accent transition-colors cursor-pointer">
+                            <Card className="cursor-pointer transition-colors hover:bg-accent">
                                 <CardHeader>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <Users className="h-5 w-5 text-muted-foreground" />
                                             <div>
-                                                <CardTitle>{user.name}</CardTitle>
-                                                <CardDescription>{user.email}</CardDescription>
+                                                <CardTitle>
+                                                    {user.name}
+                                                </CardTitle>
+                                                <CardDescription>
+                                                    {user.email}
+                                                </CardDescription>
                                             </div>
                                         </div>
-                                        <Badge variant={user.role === 'super_admin' ? 'default' : 'secondary'}>
+                                        <Badge
+                                            variant={
+                                                user.role === 'super_admin'
+                                                    ? 'default'
+                                                    : 'secondary'
+                                            }
+                                        >
                                             {user.role}
                                         </Badge>
                                     </div>
@@ -59,16 +77,24 @@ export default function UsersList({ users }: Props) {
                                 <CardContent>
                                     <div className="text-sm text-muted-foreground">
                                         {user.current_organization ? (
-                                            <span>Current: {user.current_organization.name}</span>
+                                            <span>
+                                                Current:{' '}
+                                                {user.current_organization.name}
+                                            </span>
                                         ) : (
                                             <span>No current organization</span>
                                         )}
-                                        {user.organizations && user.organizations.length > 0 && (
-                                            <span className="ml-4">
-                                                {user.organizations.length} organization
-                                                {user.organizations.length !== 1 ? 's' : ''}
-                                            </span>
-                                        )}
+                                        {user.organizations &&
+                                            user.organizations.length > 0 && (
+                                                <span className="ml-4">
+                                                    {user.organizations.length}{' '}
+                                                    organization
+                                                    {user.organizations
+                                                        .length !== 1
+                                                        ? 's'
+                                                        : ''}
+                                                </span>
+                                            )}
                                     </div>
                                 </CardContent>
                             </Card>
@@ -82,13 +108,17 @@ export default function UsersList({ users }: Props) {
                             <Link
                                 key={index}
                                 href={link.url ?? '#'}
-                                className={`px-4 py-2 rounded ${
+                                className={`rounded px-4 py-2 ${
                                     link.active
                                         ? 'bg-primary text-primary-foreground'
                                         : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                                 }`}
                             >
-                                <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
                             </Link>
                         ))}
                     </div>
@@ -97,4 +127,3 @@ export default function UsersList({ users }: Props) {
         </SuperAdminLayout>
     );
 }
-

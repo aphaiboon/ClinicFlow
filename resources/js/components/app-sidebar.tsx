@@ -11,15 +11,22 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import { index as patientsIndex } from '@/routes/patients';
 import { index as appointmentsIndex } from '@/routes/appointments';
-import { index as examRoomsIndex } from '@/routes/exam-rooms';
 import { index as auditLogsIndex } from '@/routes/audit-logs';
-import { type NavItem } from '@/types';
+import { index as examRoomsIndex } from '@/routes/exam-rooms';
+import { index as patientsIndex } from '@/routes/patients';
+import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Users, Calendar, Building, FileText } from 'lucide-react';
+import {
+    BookOpen,
+    Building,
+    Calendar,
+    FileText,
+    Folder,
+    LayoutGrid,
+    Users,
+} from 'lucide-react';
 import AppLogo from './app-logo';
-import { type SharedData } from '@/types';
 
 const getMainNavItems = (userRole?: string): NavItem[] => {
     const items: NavItem[] = [

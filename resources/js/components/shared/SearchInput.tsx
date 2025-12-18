@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
+import { router } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import { useCallback, useState } from 'react';
-import { router } from '@inertiajs/react';
 
 interface SearchInputProps {
     placeholder?: string;
@@ -10,21 +10,33 @@ interface SearchInputProps {
     defaultValue?: string;
 }
 
-export function SearchInput({ placeholder = 'Search...', searchKey = 'search', className, defaultValue = '' }: SearchInputProps) {
+export function SearchInput({
+    placeholder = 'Search...',
+    searchKey = 'search',
+    className,
+    defaultValue = '',
+}: SearchInputProps) {
     const [value, setValue] = useState(defaultValue);
 
-    const handleSubmit = useCallback((e: React.FormEvent) => {
-        e.preventDefault();
-        router.get(window.location.pathname, { [searchKey]: value }, {
-            preserveState: true,
-            replace: true,
-        });
-    }, [value, searchKey]);
+    const handleSubmit = useCallback(
+        (e: React.FormEvent) => {
+            e.preventDefault();
+            router.get(
+                window.location.pathname,
+                { [searchKey]: value },
+                {
+                    preserveState: true,
+                    replace: true,
+                },
+            );
+        },
+        [value, searchKey],
+    );
 
     return (
         <form onSubmit={handleSubmit} className={className}>
             <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                     type="search"
                     placeholder={placeholder}
@@ -36,4 +48,3 @@ export function SearchInput({ placeholder = 'Search...', searchKey = 'search', c
         </form>
     );
 }
-

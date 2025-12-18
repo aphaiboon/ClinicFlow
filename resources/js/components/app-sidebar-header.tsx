@@ -1,7 +1,10 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import OrganizationSwitcher from '@/components/OrganizationSwitcher';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { type BreadcrumbItem as BreadcrumbItemType, type SharedData } from '@/types';
+import {
+    type BreadcrumbItem as BreadcrumbItemType,
+    type SharedData,
+} from '@/types';
 import { usePage } from '@inertiajs/react';
 
 export function AppSidebarHeader({
@@ -17,14 +20,16 @@ export function AppSidebarHeader({
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
-            {auth.user && auth.organizations && auth.organizations.length > 1 && (
-                <div className="ml-auto">
-                    <OrganizationSwitcher
-                        organizations={auth.organizations}
-                        currentOrganization={auth.currentOrganization}
-                    />
-                </div>
-            )}
+            {auth.user &&
+                auth.organizations &&
+                auth.organizations.length > 1 && (
+                    <div className="ml-auto">
+                        <OrganizationSwitcher
+                            organizations={auth.organizations}
+                            currentOrganization={auth.currentOrganization}
+                        />
+                    </div>
+                )}
         </header>
     );
 }

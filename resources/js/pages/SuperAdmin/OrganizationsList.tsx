@@ -1,9 +1,15 @@
-import { Head, Link } from '@inertiajs/react';
-import { Building } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import SuperAdminLayout from '@/layouts/SuperAdminLayout';
 import { show as showOrganization } from '@/routes/super-admin/organizations';
+import { Head, Link } from '@inertiajs/react';
+import { Building } from 'lucide-react';
 
 interface Organization {
     id: number;
@@ -30,35 +36,61 @@ export default function OrganizationsList({ organizations }: Props) {
             <Head title="Organizations" />
             <div className="space-y-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Organizations</h1>
-                    <p className="text-muted-foreground mt-2">Manage all organizations in the system</p>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        Organizations
+                    </h1>
+                    <p className="mt-2 text-muted-foreground">
+                        Manage all organizations in the system
+                    </p>
                 </div>
 
                 <div className="grid gap-4">
                     {organizations.data.map((org) => (
-                        <Link key={org.id} href={showOrganization({ organization: org.id })}>
-                            <Card className="hover:bg-accent transition-colors cursor-pointer">
+                        <Link
+                            key={org.id}
+                            href={showOrganization({ organization: org.id })}
+                        >
+                            <Card className="cursor-pointer transition-colors hover:bg-accent">
                                 <CardHeader>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <Building className="h-5 w-5 text-muted-foreground" />
                                             <div>
-                                                <CardTitle>{org.name}</CardTitle>
+                                                <CardTitle>
+                                                    {org.name}
+                                                </CardTitle>
                                                 {org.email && (
-                                                    <CardDescription>{org.email}</CardDescription>
+                                                    <CardDescription>
+                                                        {org.email}
+                                                    </CardDescription>
                                                 )}
                                             </div>
                                         </div>
-                                        <Badge variant={org.is_active ? 'default' : 'secondary'}>
-                                            {org.is_active ? 'Active' : 'Inactive'}
+                                        <Badge
+                                            variant={
+                                                org.is_active
+                                                    ? 'default'
+                                                    : 'secondary'
+                                            }
+                                        >
+                                            {org.is_active
+                                                ? 'Active'
+                                                : 'Inactive'}
                                         </Badge>
                                     </div>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="flex gap-4 text-sm text-muted-foreground">
-                                        <span>{org.users_count ?? 0} users</span>
-                                        <span>{org.patients_count ?? 0} patients</span>
-                                        <span>{org.appointments_count ?? 0} appointments</span>
+                                        <span>
+                                            {org.users_count ?? 0} users
+                                        </span>
+                                        <span>
+                                            {org.patients_count ?? 0} patients
+                                        </span>
+                                        <span>
+                                            {org.appointments_count ?? 0}{' '}
+                                            appointments
+                                        </span>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -72,13 +104,17 @@ export default function OrganizationsList({ organizations }: Props) {
                             <Link
                                 key={index}
                                 href={link.url ?? '#'}
-                                className={`px-4 py-2 rounded ${
+                                className={`rounded px-4 py-2 ${
                                     link.active
                                         ? 'bg-primary text-primary-foreground'
                                         : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                                 }`}
                             >
-                                <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                                <span
+                                    dangerouslySetInnerHTML={{
+                                        __html: link.label,
+                                    }}
+                                />
                             </Link>
                         ))}
                     </div>
@@ -87,4 +123,3 @@ export default function OrganizationsList({ organizations }: Props) {
         </SuperAdminLayout>
     );
 }
-

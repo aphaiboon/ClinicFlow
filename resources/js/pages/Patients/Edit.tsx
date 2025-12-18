@@ -1,8 +1,8 @@
 import { PatientForm } from '@/components/patients/PatientForm';
 import AppLayout from '@/layouts/app-layout';
+import { index, show, update } from '@/routes/patients';
 import { type BreadcrumbItem, type Patient } from '@/types';
 import { Head } from '@inertiajs/react';
-import { index, update, show } from '@/routes/patients';
 
 interface PatientsEditProps {
     patient: Patient;
