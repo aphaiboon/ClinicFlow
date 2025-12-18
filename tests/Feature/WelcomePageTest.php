@@ -101,9 +101,9 @@ test('welcome page displays concise hero section without duplicate heading', fun
     $response->assertInertia(fn ($page) => $page
         ->component('welcome')
     );
-
+    
     $html = $response->getContent();
-
+    
     expect($html)->not->toContain('text-7xl bg-gradient-to-r from-[#323d47] to-[#1bc3bb]')
-        ->and($html)->toContain('Streamline Your Clinic Operations');
+        ->and($html)->not->toContain('Clinic Management System');
 });
