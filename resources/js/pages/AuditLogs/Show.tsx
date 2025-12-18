@@ -29,7 +29,7 @@ export default function Show({ auditLog }: AuditLogsShowProps) {
         <AppLayout breadcrumbs={breadcrumbs(auditLog)}>
             <Head title={`Audit Log #${auditLog.id}`} />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">
                         Audit Log #{auditLog.id}

@@ -13,8 +13,10 @@ import AppLayout from '@/layouts/app-layout';
 import { index, store } from '@/routes/appointments';
 import { type Appointment, type BreadcrumbItem, type User } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Calendar, Clock, Plus, User as UserIcon } from 'lucide-react';
+import { Calendar, Clock, MapPin, Plus, User as UserIcon } from 'lucide-react';
 import { useState } from 'react';
+
+type AppointmentStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
 
 interface AppointmentsIndexProps {
     appointments: {
@@ -68,7 +70,7 @@ export default function Index({
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Appointments" />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">
@@ -235,6 +237,25 @@ export default function Index({
                                                                         .user
                                                                         .name
                                                                 }
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {appointment.examRoom && (
+                                                        <div className="flex items-center gap-2">
+                                                            <MapPin className="size-4" />
+                                                            <span>
+                                                                {
+                                                                    appointment
+                                                                        .examRoom
+                                                                        .name
+                                                                }{' '}
+                                                                (
+                                                                {
+                                                                    appointment
+                                                                        .examRoom
+                                                                        .room_number
+                                                                }
+                                                                )
                                                             </span>
                                                         </div>
                                                     )}

@@ -7,8 +7,9 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import { store } from '@/routes/login';
 import { type SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import {
     ChevronDown,
     Search,
@@ -33,7 +34,6 @@ interface DemoUser {
 
 interface QuickLoginSelectorProps {
     demoUsers?: DemoUser[];
-    onUserSelect: (email: string, password: string) => void;
     onPatientSelect?: (email: string) => void;
 }
 
@@ -117,7 +117,6 @@ function filterUsers(users: DemoUser[], query: string): DemoUser[] {
 
 export default function QuickLoginSelector({
     demoUsers = [],
-    onUserSelect,
     onPatientSelect,
 }: QuickLoginSelectorProps) {
     const { isDemoEnvironment } = usePage<SharedData>().props;
@@ -171,7 +170,21 @@ export default function QuickLoginSelector({
         if (user.type === 'patient' && onPatientSelect) {
             onPatientSelect(user.email);
         } else {
-            onUserSelect(user.email, 'password');
+            // Auto-login the user
+            router.post(
+                store().url,
+                {
+                    email: user.email,
+                    password: 'password',
+                    remember: false,
+                },
+                {
+                    onSuccess: () => {
+                        setOpen(false);
+                        setSearchQuery('');
+                    },
+                }
+            );
         }
         setOpen(false);
         setSearchQuery('');

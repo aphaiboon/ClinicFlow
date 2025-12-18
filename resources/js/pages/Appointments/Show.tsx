@@ -1,5 +1,8 @@
 import InputError from '@/components/input-error';
-import { StatusBadge } from '@/components/shared/StatusBadge';
+import {
+    StatusBadge,
+    type AppointmentStatus,
+} from '@/components/shared/StatusBadge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -76,7 +79,7 @@ export default function Show({
                 title={`Appointment - ${appointment.patient?.first_name} ${appointment.patient?.last_name}`}
             />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">

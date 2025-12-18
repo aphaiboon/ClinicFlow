@@ -67,7 +67,7 @@ export default function Index({ auditLogs, filters }: AuditLogsIndexProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Audit Logs" />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">
                         Audit Logs

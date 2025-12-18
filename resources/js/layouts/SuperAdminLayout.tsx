@@ -1,4 +1,4 @@
-import { dashboard as superAdminDashboard } from '@/routes/super-admin';
+import { dashboard } from '@/routes';
 import { Head } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 import AppSidebarLayout from './app/app-sidebar-layout';
@@ -14,7 +14,7 @@ export default function SuperAdminLayout({
     breadcrumbs = [],
 }: PropsWithChildren<SuperAdminLayoutProps>) {
     const fullBreadcrumbs = [
-        { label: 'Super Admin', href: superAdminDashboard() },
+        { label: 'Super Admin', href: dashboard() },
         ...breadcrumbs,
     ];
 

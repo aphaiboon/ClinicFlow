@@ -39,10 +39,6 @@ export default function Login({
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleUserSelect = (selectedEmail: string, selectedPassword: string) => {
-        setEmail(selectedEmail);
-        setPassword(selectedPassword);
-    };
 
     const handlePatientSelect = (selectedEmail: string) => {
         // Redirect to patient login page with email pre-filled
@@ -66,7 +62,6 @@ export default function Login({
                         {demoUsers && demoUsers.length > 0 && (
                             <QuickLoginSelector
                                 demoUsers={demoUsers}
-                                onUserSelect={handleUserSelect}
                                 onPatientSelect={handlePatientSelect}
                             />
                         )}

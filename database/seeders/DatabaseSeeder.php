@@ -73,10 +73,13 @@ class DatabaseSeeder extends Seeder
                 $user->update(['current_organization_id' => $organization->id]);
             });
 
+        // Seed exam rooms (required before appointments)
+        $this->call(ExamRoomSeeder::class);
+
         // Seed patients for ABC Clinic
         $this->call(PatientSeeder::class);
 
-        // Seed appointments (requires patients and users to exist)
+        // Seed appointments (requires patients, users, and exam rooms to exist)
         $this->call(AppointmentSeeder::class);
     }
 }

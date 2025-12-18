@@ -42,9 +42,7 @@ Route::middleware('auth:patient')->prefix('patient')->name('patient.')->group(fu
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('patients', \App\Http\Controllers\PatientController::class);
     Route::resource('appointments', \App\Http\Controllers\AppointmentController::class);
@@ -60,7 +58,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('organizations/{organization}/switch', [\App\Http\Controllers\OrganizationController::class, 'switch'])->name('organizations.switch');
 
     Route::middleware(\App\Http\Middleware\RequireSuperAdmin::class)->prefix('super-admin')->name('super-admin.')->group(function () {
-        Route::get('dashboard', [\App\Http\Controllers\SuperAdmin\SuperAdminController::class, 'dashboard'])->name('dashboard');
         Route::get('organizations', [\App\Http\Controllers\SuperAdmin\OrganizationController::class, 'index'])->name('organizations.index');
         Route::get('organizations/{organization}', [\App\Http\Controllers\SuperAdmin\OrganizationController::class, 'show'])->name('organizations.show');
         Route::get('users', [\App\Http\Controllers\SuperAdmin\UserController::class, 'index'])->name('users.index');

@@ -46,7 +46,7 @@ export default function Edit({
         <AppLayout breadcrumbs={breadcrumbs(appointment)}>
             <Head title={`Edit Appointment #${appointment.id}`} />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">
                         Edit Appointment #{appointment.id}

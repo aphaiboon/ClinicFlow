@@ -1,5 +1,4 @@
 import AppLogoIcon from '@/components/app-logo-icon';
-import DemoWarningBanner from '@/components/demo-warning-banner';
 import { home } from '@/routes';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
@@ -17,7 +16,6 @@ export default function AuthSimpleLayout({
 }: PropsWithChildren<AuthLayoutProps>) {
     return (
         <div className="flex min-h-svh flex-col bg-background">
-            <DemoWarningBanner />
             <div className="flex flex-1 items-center justify-center gap-6 p-6 md:p-10">
             <div className="w-full max-w-sm">
                 <div className="flex flex-col gap-8">

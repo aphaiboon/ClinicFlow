@@ -1,4 +1,7 @@
-import { StatusBadge } from '@/components/shared/StatusBadge';
+import {
+    StatusBadge,
+    type AppointmentStatus,
+} from '@/components/shared/StatusBadge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -48,7 +51,7 @@ export default function Show({ patient }: PatientsShowProps) {
         <AppLayout breadcrumbs={breadcrumbs(patient)}>
             <Head title={`${patient.first_name} ${patient.last_name}`} />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">
