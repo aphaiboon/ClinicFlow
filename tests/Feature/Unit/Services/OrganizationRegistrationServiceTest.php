@@ -84,7 +84,7 @@ it('validates required organization fields', function () {
     ];
 
     expect(fn () => $this->service->register($organizationData, $userData))
-        ->toThrow();
+        ->toThrow(\Exception::class);
 });
 
 it('validates required user fields', function () {
