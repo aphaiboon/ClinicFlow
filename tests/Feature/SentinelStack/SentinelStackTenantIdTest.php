@@ -72,8 +72,11 @@ it('uses resource organization_id as tenant_id when available', function () {
 
     Event::dispatch(new PatientCreated($patient));
 
-    expect($this->capturedEvents)->toHaveCount(1)
-        ->and($this->capturedEvents[0]['tenant_id'])->toBe((string) $organization2->id);
+    // Filter to only domain_event type (PatientCreated triggers both ForwardToSentinelStack and ForwardAuditLogToSentinelStack)
+    $domainEvents = collect($this->capturedEvents)->where('event_type', 'domain_event')->values()->all();
+
+    expect($domainEvents)->toHaveCount(1)
+        ->and($domainEvents[0]['tenant_id'])->toBe((string) $organization2->id);
 });
 
 it('falls back to config tenant_id when organization_id is null', function () {
