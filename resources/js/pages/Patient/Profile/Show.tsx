@@ -1,8 +1,8 @@
 import PatientLayout from '@/layouts/patient-layout';
 import { Head, Link } from '@inertiajs/react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Mail, Phone, MapPin, Calendar } from 'lucide-react';
+import { User, Mail, MapPin } from 'lucide-react';
 
 interface Patient {
     id: number;
@@ -27,7 +27,6 @@ interface ProfileShowProps {
 
 export default function PatientProfileShow({
     patient,
-    editableFields = [],
 }: ProfileShowProps) {
     return (
         <PatientLayout title="My Profile">

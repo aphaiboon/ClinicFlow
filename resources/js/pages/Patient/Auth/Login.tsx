@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { Head, router } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface LoginProps {
     status?: string;
@@ -16,12 +16,6 @@ interface LoginProps {
 export default function PatientLogin({ status, prefilledEmail }: LoginProps) {
     const [email, setEmail] = useState(prefilledEmail || '');
     const [processing, setProcessing] = useState(false);
-
-    useEffect(() => {
-        if (prefilledEmail) {
-            setEmail(prefilledEmail);
-        }
-    }, [prefilledEmail]);
 
     const isEmailValid = email.trim() !== '' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 

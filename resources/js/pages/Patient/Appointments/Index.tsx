@@ -28,7 +28,6 @@ interface AppointmentsIndexProps {
 
 export default function PatientAppointmentsIndex({
     appointments = [],
-    filters = {},
 }: AppointmentsIndexProps) {
     const getStatusBadgeVariant = (status: string) => {
         switch (status) {

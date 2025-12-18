@@ -26,7 +26,6 @@ interface ProfileEditProps {
 
 export default function PatientProfileEdit({
     patient,
-    editableFields = [],
 }: ProfileEditProps) {
     const [formData, setFormData] = useState({
         email: patient.email || '',

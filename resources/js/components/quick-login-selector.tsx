@@ -158,14 +158,14 @@ export default function QuickLoginSelector({
         }
     }, [open]);
 
-    if (!isDemoEnvironment || demoUsers.length === 0) {
-        return null;
-    }
-
     const filteredUsers = useMemo(
         () => filterUsers(demoUsers, searchQuery),
         [demoUsers, searchQuery],
     );
+
+    if (!isDemoEnvironment || demoUsers.length === 0) {
+        return null;
+    }
 
     const handleSelect = (user: DemoUser) => {
         if (user.type === 'patient' && onPatientSelect) {

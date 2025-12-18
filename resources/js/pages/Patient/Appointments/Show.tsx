@@ -1,9 +1,9 @@
 import PatientLayout from '@/layouts/patient-layout';
 import { Head, Link, router } from '@inertiajs/react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, User, MapPin } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 interface Appointment {
