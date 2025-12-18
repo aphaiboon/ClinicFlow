@@ -10,7 +10,7 @@ import AuthLayout from '@/layouts/auth-layout';
 import { store } from '@/routes/login';
 import { register } from '@/routes/organization';
 import { request } from '@/routes/password';
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 interface DemoUser {
@@ -18,6 +18,9 @@ interface DemoUser {
     name: string;
     email: string;
     role: string;
+    organizationRole?: string | null;
+    organizationName?: string | null;
+    type?: 'user' | 'patient';
 }
 
 interface LoginProps {
@@ -41,6 +44,11 @@ export default function Login({
         setPassword(selectedPassword);
     };
 
+    const handlePatientSelect = (selectedEmail: string) => {
+        // Redirect to patient login page with email pre-filled
+        router.visit(`/patient/login?email=${encodeURIComponent(selectedEmail)}`);
+    };
+
     return (
         <AuthLayout
             title="Log in to your account"
@@ -59,6 +67,7 @@ export default function Login({
                             <QuickLoginSelector
                                 demoUsers={demoUsers}
                                 onUserSelect={handleUserSelect}
+                                onPatientSelect={handlePatientSelect}
                             />
                         )}
 
@@ -128,14 +137,22 @@ export default function Login({
                             </Button>
                         </div>
 
-                        {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground">
-                                Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
-                                    Sign up
+                        <div className="space-y-2 text-center text-sm text-muted-foreground">
+                            {canRegister && (
+                                <div>
+                                    Don't have an account?{' '}
+                                    <TextLink href={register()} tabIndex={5}>
+                                        Sign up
+                                    </TextLink>
+                                </div>
+                            )}
+                            <div>
+                                Are you a patient?{' '}
+                                <TextLink href="/patient/login" tabIndex={6}>
+                                    Patient Login
                                 </TextLink>
                             </div>
-                        )}
+                        </div>
                     </>
                 )}
             </Form>

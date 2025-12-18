@@ -17,8 +17,12 @@ class AuditService
         ?array $changes = null,
         ?array $metadata = null
     ): AuditLog {
+        // Check both web and patient guards
+        $user = Auth::user();
+        $patient = Auth::guard('patient')->user();
+
         $auditData = [
-            'user_id' => Auth::id(),
+            'user_id' => $user?->id,
             'action' => $action,
             'resource_type' => $resourceType,
             'resource_id' => $resourceId,
@@ -28,8 +32,19 @@ class AuditService
             'metadata' => $metadata,
         ];
 
-        if (Auth::check() && Auth::user()->current_organization_id) {
-            $auditData['organization_id'] = Auth::user()->current_organization_id;
+        // Set organization_id from user or patient
+        if ($user && $user->current_organization_id) {
+            $auditData['organization_id'] = $user->current_organization_id;
+        } elseif ($patient && $patient->organization_id) {
+            $auditData['organization_id'] = $patient->organization_id;
+        }
+
+        // Add patient info to metadata if action was performed by patient
+        if ($patient && ! $user) {
+            $auditData['metadata'] = array_merge($auditData['metadata'] ?? [], [
+                'patient_id' => $patient->id,
+                'performed_by' => 'patient',
+            ]);
         }
 
         $auditLog = AuditLog::create($auditData);

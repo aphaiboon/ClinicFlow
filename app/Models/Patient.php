@@ -4,13 +4,14 @@ namespace App\Models;
 
 use App\Enums\Gender;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Patient extends Model
+class Patient extends Authenticatable
 {
-    use HasFactory;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'organization_id',
@@ -21,6 +22,7 @@ class Patient extends Model
         'gender',
         'phone',
         'email',
+        'password',
         'address_line_1',
         'address_line_2',
         'city',
@@ -29,11 +31,18 @@ class Patient extends Model
         'country',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     protected function casts(): array
     {
         return [
             'date_of_birth' => 'date',
             'gender' => Gender::class,
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 

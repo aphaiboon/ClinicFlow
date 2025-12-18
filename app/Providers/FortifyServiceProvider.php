@@ -55,7 +55,7 @@ class FortifyServiceProvider extends ServiceProvider
             ];
 
             if (app()->environment(['local', 'staging'])) {
-                $props['demoUsers'] = \App\Models\User::query()
+                $demoUsers = \App\Models\User::query()
                     ->with(['organizations' => function ($query) {
                         $query->select('organizations.id', 'organizations.name');
                     }])
@@ -81,9 +81,35 @@ class FortifyServiceProvider extends ServiceProvider
                             'role' => $user->role->value,
                             'organizationRole' => $orgRole,
                             'organizationName' => $orgName,
+                            'type' => 'user',
                         ];
                     })
                     ->toArray();
+
+                // Add patients to demo users list
+                $demoPatients = \App\Models\Patient::query()
+                    ->whereHas('organization', function ($query) {
+                        $query->where('name', 'ABC Clinic');
+                    })
+                    ->whereNotNull('email')
+                    ->select('id', 'first_name', 'last_name', 'email', 'organization_id')
+                    ->orderBy('first_name')
+                    ->orderBy('last_name')
+                    ->get()
+                    ->map(function ($patient) {
+                        return [
+                            'id' => $patient->id,
+                            'name' => $patient->first_name.' '.$patient->last_name,
+                            'email' => $patient->email,
+                            'role' => 'patient',
+                            'organizationRole' => null,
+                            'organizationName' => $patient->organization->name ?? null,
+                            'type' => 'patient',
+                        ];
+                    })
+                    ->toArray();
+
+                $props['demoUsers'] = array_merge($demoUsers, $demoPatients);
             }
 
             return Inertia::render('auth/login', $props);

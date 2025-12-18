@@ -39,6 +39,12 @@ class HandleInertiaRequests extends Middleware
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
         $user = $request->user();
+        $patient = $request->user('patient');
+
+        // Only load organization relationships if user is a User model (not Patient)
+        if ($user && $user instanceof \App\Models\User) {
+            $user->load('currentOrganization', 'organizations');
+        }
 
         return [
             ...parent::share($request),
@@ -46,9 +52,10 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'isDemoEnvironment' => app()->environment(['local', 'staging']),
             'auth' => [
-                'user' => $user?->load('currentOrganization', 'organizations'),
-                'currentOrganization' => $user?->currentOrganization,
-                'organizations' => $user?->organizations ?? [],
+                'user' => $user instanceof \App\Models\User ? $user : null,
+                'patient' => $patient,
+                'currentOrganization' => $user instanceof \App\Models\User ? $user->currentOrganization : null,
+                'organizations' => $user instanceof \App\Models\User ? $user->organizations ?? [] : [],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

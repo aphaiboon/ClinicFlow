@@ -25,11 +25,13 @@ interface DemoUser {
     role: string;
     organizationRole?: string | null;
     organizationName?: string | null;
+    type?: 'user' | 'patient';
 }
 
 interface QuickLoginSelectorProps {
     demoUsers?: DemoUser[];
     onUserSelect: (email: string, password: string) => void;
+    onPatientSelect?: (email: string) => void;
 }
 
 const getRoleBadgeVariant = (
@@ -45,7 +47,10 @@ const getRoleBadgeVariant = (
     return 'secondary';
 };
 
-const getRoleIcon = (role: string, orgRole?: string | null) => {
+const getRoleIcon = (role: string, orgRole?: string | null, type?: string) => {
+    if (type === 'patient') {
+        return User;
+    }
     if (role === 'super_admin') {
         return Shield;
     }
@@ -61,7 +66,10 @@ const getRoleIcon = (role: string, orgRole?: string | null) => {
     return User;
 };
 
-const formatRole = (role: string, orgRole?: string | null): string => {
+const formatRole = (role: string, orgRole?: string | null, type?: string): string => {
+    if (type === 'patient') {
+        return 'Patient';
+    }
     if (role === 'super_admin') {
         return 'Super Admin';
     }
@@ -74,6 +82,7 @@ const formatRole = (role: string, orgRole?: string | null): string => {
 export default function QuickLoginSelector({
     demoUsers = [],
     onUserSelect,
+    onPatientSelect,
 }: QuickLoginSelectorProps) {
     const { isDemoEnvironment } = usePage<SharedData>().props;
 
@@ -84,7 +93,11 @@ export default function QuickLoginSelector({
     const handleSelect = (userId: string) => {
         const user = demoUsers.find((u) => u.id === Number(userId));
         if (user) {
-            onUserSelect(user.email, 'password');
+            if (user.type === 'patient' && onPatientSelect) {
+                onPatientSelect(user.email);
+            } else {
+                onUserSelect(user.email, 'password');
+            }
         }
     };
 
@@ -105,8 +118,8 @@ export default function QuickLoginSelector({
                 </SelectTrigger>
                 <SelectContent className="max-h-[400px]">
                     {demoUsers.map((user) => {
-                        const RoleIcon = getRoleIcon(user.role, user.organizationRole);
-                        const roleLabel = formatRole(user.role, user.organizationRole);
+                        const RoleIcon = getRoleIcon(user.role, user.organizationRole, user.type);
+                        const roleLabel = formatRole(user.role, user.organizationRole, user.type);
                         return (
                             <SelectItem
                                 key={user.id}

@@ -123,6 +123,26 @@ class AppointmentPolicy
         return in_array($role, [OrganizationRole::Admin, OrganizationRole::Receptionist, OrganizationRole::Owner], true);
     }
 
+    /**
+     * Determine if a patient can view their own appointment.
+     */
+    public function patientView(\App\Models\Patient $patient, Appointment $appointment): bool
+    {
+        return $patient->id === $appointment->patient_id;
+    }
+
+    /**
+     * Determine if a patient can cancel their own appointment.
+     */
+    public function patientCancel(\App\Models\Patient $patient, Appointment $appointment): bool
+    {
+        if ($patient->id !== $appointment->patient_id) {
+            return false;
+        }
+
+        return $appointment->status->isCancellable();
+    }
+
     public function restore(User $user, Appointment $appointment): bool
     {
         return false;

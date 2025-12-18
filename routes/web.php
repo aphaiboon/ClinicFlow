@@ -21,6 +21,26 @@ Route::middleware('guest')->group(function () {
         ->name('organization.register.store');
 });
 
+// Patient authentication routes
+Route::middleware('guest:patient')->prefix('patient')->name('patient.')->group(function () {
+    Route::get('login', [\App\Http\Controllers\Patient\PatientAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [\App\Http\Controllers\Patient\PatientAuthController::class, 'requestMagicLink'])->name('login.request');
+    Route::get('verify/{token}', [\App\Http\Controllers\Patient\PatientAuthController::class, 'verifyMagicLink'])->name('verify');
+});
+
+Route::middleware('auth:patient')->prefix('patient')->name('patient.')->group(function () {
+    Route::get('dashboard', [\App\Http\Controllers\Patient\PatientDashboardController::class, 'index'])->name('dashboard');
+    Route::post('logout', [\App\Http\Controllers\Patient\PatientAuthController::class, 'logout'])->name('logout');
+
+    Route::get('appointments', [\App\Http\Controllers\Patient\PatientAppointmentController::class, 'index'])->name('appointments.index');
+    Route::get('appointments/{appointment}', [\App\Http\Controllers\Patient\PatientAppointmentController::class, 'show'])->name('appointments.show');
+    Route::post('appointments/{appointment}/cancel', [\App\Http\Controllers\Patient\PatientAppointmentController::class, 'cancel'])->name('appointments.cancel');
+
+    Route::get('profile', [\App\Http\Controllers\Patient\PatientProfileController::class, 'show'])->name('profile.show');
+    Route::get('profile/edit', [\App\Http\Controllers\Patient\PatientProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('profile', [\App\Http\Controllers\Patient\PatientProfileController::class, 'update'])->name('profile.update');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');

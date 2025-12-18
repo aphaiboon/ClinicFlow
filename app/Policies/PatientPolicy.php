@@ -22,6 +22,22 @@ class PatientPolicy
         return $user->current_organization_id === $patient->organization_id;
     }
 
+    /**
+     * Determine if a patient can view their own profile.
+     */
+    public function patientView(\App\Models\Patient $patient, Patient $model): bool
+    {
+        return $patient->id === $model->id;
+    }
+
+    /**
+     * Determine if a patient can update their own profile.
+     */
+    public function patientUpdate(\App\Models\Patient $patient, Patient $model): bool
+    {
+        return $patient->id === $model->id;
+    }
+
     public function create(User $user): bool
     {
         if ($user->isSuperAdmin()) {

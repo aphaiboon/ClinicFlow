@@ -20,13 +20,13 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $organization = Organization::factory()->create([
-            'name' => 'Demo Clinic',
-            'email' => 'info@demo-clinic.test',
+            'name' => 'ABC Clinic',
+            'email' => 'info@abc-clinic.test',
         ]);
 
         $admin = User::create([
             'name' => 'Admin User',
-            'email' => 'admin@demo-clinic.test',
+            'email' => 'admin@abc-clinic.test',
             'password' => bcrypt('password'),
             'role' => UserRole::User,
             'current_organization_id' => $organization->id,
@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
 
         $clinician = User::create([
             'name' => 'Dr. Jane Smith',
-            'email' => 'jane@demo-clinic.test',
+            'email' => 'jane@abc-clinic.test',
             'password' => bcrypt('password'),
             'role' => UserRole::User,
             'current_organization_id' => $organization->id,
@@ -44,7 +44,7 @@ class DatabaseSeeder extends Seeder
 
         $receptionist = User::create([
             'name' => 'Receptionist User',
-            'email' => 'receptionist@demo-clinic.test',
+            'email' => 'receptionist@abc-clinic.test',
             'password' => bcrypt('password'),
             'role' => UserRole::User,
             'current_organization_id' => $organization->id,
@@ -72,5 +72,11 @@ class DatabaseSeeder extends Seeder
                 ]);
                 $user->update(['current_organization_id' => $organization->id]);
             });
+
+        // Seed patients for ABC Clinic
+        $this->call(PatientSeeder::class);
+
+        // Seed appointments (requires patients and users to exist)
+        $this->call(AppointmentSeeder::class);
     }
 }
