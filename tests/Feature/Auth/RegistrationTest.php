@@ -1,17 +1,21 @@
 <?php
 
-test('registration screen can be rendered', function () {
-    $response = $this->get(route('register'));
+test('organization registration screen can be rendered', function () {
+    $response = $this->get(route('organization.register'));
 
-    $response->assertStatus(200);
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page
+        ->component('auth/organization-register')
+    );
 });
 
-test('new users can register', function () {
-    $response = $this->post(route('register.store'), [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password',
-        'password_confirmation' => 'password',
+test('guests can register organization and user', function () {
+    $response = $this->post(route('organization.register.store'), [
+        'name' => 'Test Clinic',
+        'user_name' => 'Test User',
+        'user_email' => 'test@example.com',
+        'password' => 'password123',
+        'password_confirmation' => 'password123',
     ]);
 
     $this->assertAuthenticated();
