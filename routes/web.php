@@ -35,6 +35,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('exam-rooms/{examRoom}/deactivate', [\App\Http\Controllers\ExamRoomController::class, 'deactivate'])->name('exam-rooms.deactivate');
     Route::get('audit-logs', [\App\Http\Controllers\AuditLogController::class, 'index'])->name('audit-logs.index');
     Route::get('audit-logs/{auditLog}', [\App\Http\Controllers\AuditLogController::class, 'show'])->name('audit-logs.show');
+
+    Route::middleware(\App\Http\Middleware\RequireSuperAdmin::class)->prefix('super-admin')->name('super-admin.')->group(function () {
+        Route::get('dashboard', [\App\Http\Controllers\SuperAdmin\SuperAdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('organizations', [\App\Http\Controllers\SuperAdmin\OrganizationController::class, 'index'])->name('organizations.index');
+        Route::get('organizations/{organization}', [\App\Http\Controllers\SuperAdmin\OrganizationController::class, 'show'])->name('organizations.show');
+        Route::get('users', [\App\Http\Controllers\SuperAdmin\UserController::class, 'index'])->name('users.index');
+        Route::get('users/{user}', [\App\Http\Controllers\SuperAdmin\UserController::class, 'show'])->name('users.show');
+    });
 });
 
 require __DIR__.'/settings.php';
