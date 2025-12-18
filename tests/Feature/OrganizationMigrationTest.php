@@ -28,10 +28,10 @@ test('organizations table exists with correct columns', function () {
 });
 
 test('organizations table has unique slug', function () {
-    $indexes = Schema::getConnection()->getDoctrineSchemaManager()
-        ->listTableIndexes('organizations');
+    $indexes = Schema::getConnection()->select("SELECT name FROM sqlite_master WHERE type='index' AND tbl_name='organizations'");
+    $indexNames = collect($indexes)->pluck('name')->filter()->toArray();
 
-    expect($indexes)->toHaveKey('organizations_slug_unique');
+    expect($indexNames)->toContain('organizations_slug_unique');
 });
 
 test('organizations table has correct column types', function () {
