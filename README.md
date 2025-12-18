@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/images/clinicflow-text-logo.png" alt="ClinicFlow" width="200"/>
+  <img src="public/images/clinicflow-icon-logo.png" alt="ClinicFlow" width="200"/>
 </div>
 
 # ClinicFlow
