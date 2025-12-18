@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Enums\UserRole;
+use App\Enums\OrganizationRole;
 use App\Models\Patient;
 use App\Models\User;
 
@@ -15,22 +15,56 @@ class PatientPolicy
 
     public function view(User $user, Patient $patient): bool
     {
-        return true;
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        return $user->current_organization_id === $patient->organization_id;
     }
 
     public function create(User $user): bool
     {
-        return in_array($user->role, [UserRole::Admin, UserRole::Receptionist], true);
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if (! $user->current_organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        return in_array($role, [OrganizationRole::Admin, OrganizationRole::Receptionist], true);
     }
 
     public function update(User $user, Patient $patient): bool
     {
-        return in_array($user->role, [UserRole::Admin, UserRole::Receptionist], true);
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($user->current_organization_id !== $patient->organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        return in_array($role, [OrganizationRole::Admin, OrganizationRole::Receptionist], true);
     }
 
     public function delete(User $user, Patient $patient): bool
     {
-        return $user->role === UserRole::Admin;
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($user->current_organization_id !== $patient->organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        return $role === OrganizationRole::Admin || $role === OrganizationRole::Owner;
     }
 
     public function restore(User $user, Patient $patient): bool

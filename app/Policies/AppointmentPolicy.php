@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Enums\UserRole;
+use App\Enums\OrganizationRole;
 use App\Models\Appointment;
 use App\Models\User;
 
@@ -15,11 +15,21 @@ class AppointmentPolicy
 
     public function view(User $user, Appointment $appointment): bool
     {
-        if ($user->role === UserRole::Admin || $user->role === UserRole::Receptionist) {
+        if ($user->isSuperAdmin()) {
             return true;
         }
 
-        if ($user->role === UserRole::Clinician) {
+        if ($user->current_organization_id !== $appointment->organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        if (in_array($role, [OrganizationRole::Admin, OrganizationRole::Receptionist, OrganizationRole::Owner], true)) {
+            return true;
+        }
+
+        if ($role === OrganizationRole::Clinician) {
             return $appointment->user_id === $user->id;
         }
 
@@ -28,16 +38,36 @@ class AppointmentPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role, [UserRole::Admin, UserRole::Receptionist], true);
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if (! $user->current_organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        return in_array($role, [OrganizationRole::Admin, OrganizationRole::Receptionist, OrganizationRole::Owner], true);
     }
 
     public function update(User $user, Appointment $appointment): bool
     {
-        if ($user->role === UserRole::Admin) {
+        if ($user->isSuperAdmin()) {
             return true;
         }
 
-        if ($user->role === UserRole::Clinician) {
+        if ($user->current_organization_id !== $appointment->organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        if ($role === OrganizationRole::Admin || $role === OrganizationRole::Owner) {
+            return true;
+        }
+
+        if ($role === OrganizationRole::Clinician) {
             return $appointment->user_id === $user->id;
         }
 
@@ -46,12 +76,32 @@ class AppointmentPolicy
 
     public function delete(User $user, Appointment $appointment): bool
     {
-        return $user->role === UserRole::Admin;
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($user->current_organization_id !== $appointment->organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        return $role === OrganizationRole::Admin || $role === OrganizationRole::Owner;
     }
 
     public function cancel(User $user, Appointment $appointment): bool
     {
-        if (! in_array($user->role, [UserRole::Admin, UserRole::Receptionist], true)) {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($user->current_organization_id !== $appointment->organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        if (! in_array($role, [OrganizationRole::Admin, OrganizationRole::Receptionist, OrganizationRole::Owner], true)) {
             return false;
         }
 
@@ -60,7 +110,17 @@ class AppointmentPolicy
 
     public function assignRoom(User $user, Appointment $appointment): bool
     {
-        return in_array($user->role, [UserRole::Admin, UserRole::Receptionist], true);
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        if ($user->current_organization_id !== $appointment->organization_id) {
+            return false;
+        }
+
+        $role = $user->getOrganizationRole($user->currentOrganization);
+
+        return in_array($role, [OrganizationRole::Admin, OrganizationRole::Receptionist, OrganizationRole::Owner], true);
     }
 
     public function restore(User $user, Appointment $appointment): bool
