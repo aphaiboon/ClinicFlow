@@ -136,3 +136,54 @@ it('prevents clinician from assigning rooms', function () {
 
     expect($this->policy->assignRoom($this->clinician, $appointment))->toBeFalse();
 });
+
+it('allows patient to view their own appointments', function () {
+    $patient = \App\Models\Patient::factory()->for($this->organization)->create();
+    $otherPatient = \App\Models\Patient::factory()->for($this->organization)->create();
+    $patientAppointment = Appointment::factory()->for($this->organization)->for($patient)->create();
+    $otherPatientAppointment = Appointment::factory()->for($this->organization)->for($otherPatient)->create();
+
+    expect($this->policy->patientView($patient, $patientAppointment))->toBeTrue();
+    expect($this->policy->patientView($patient, $otherPatientAppointment))->toBeFalse();
+});
+
+it('allows patient to cancel their own cancellable appointments', function () {
+    $patient = \App\Models\Patient::factory()->for($this->organization)->create();
+    $cancellableAppointment = Appointment::factory()->for($this->organization)->for($patient)->create([
+        'status' => \App\Enums\AppointmentStatus::Scheduled,
+    ]);
+
+    expect($this->policy->patientCancel($patient, $cancellableAppointment))->toBeTrue();
+});
+
+it('prevents patient from canceling non-cancellable appointments', function () {
+    $patient = \App\Models\Patient::factory()->for($this->organization)->create();
+    $completedAppointment = Appointment::factory()->for($this->organization)->for($patient)->create([
+        'status' => \App\Enums\AppointmentStatus::Completed,
+    ]);
+
+    expect($this->policy->patientCancel($patient, $completedAppointment))->toBeFalse();
+});
+
+it('prevents patient from canceling other patients appointments', function () {
+    $patient = \App\Models\Patient::factory()->for($this->organization)->create();
+    $otherPatient = \App\Models\Patient::factory()->for($this->organization)->create();
+    $otherPatientAppointment = Appointment::factory()->for($this->organization)->for($otherPatient)->create([
+        'status' => \App\Enums\AppointmentStatus::Scheduled,
+    ]);
+
+    expect($this->policy->patientCancel($patient, $otherPatientAppointment))->toBeFalse();
+});
+
+it('staff policies remain unchanged after patient methods added', function () {
+    $appointment = Appointment::factory()->for($this->organization)->create();
+
+    expect($this->policy->view($this->admin, $appointment))->toBeTrue();
+    expect($this->policy->view($this->receptionist, $appointment))->toBeTrue();
+    expect($this->policy->create($this->admin))->toBeTrue();
+    expect($this->policy->create($this->receptionist))->toBeTrue();
+    expect($this->policy->create($this->clinician))->toBeFalse();
+    expect($this->policy->cancel($this->admin, $appointment))->toBeTrue();
+    expect($this->policy->cancel($this->receptionist, $appointment))->toBeTrue();
+    expect($this->policy->cancel($this->clinician, $appointment))->toBeFalse();
+});

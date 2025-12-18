@@ -88,6 +88,10 @@ flowchart TB
 - Domain-specific operations
 - Transaction management
 - Integration with external services
+- Patient-specific services:
+  - `PatientAuthService`: Handles magic link generation, verification, and email sending
+  - `PatientAppointmentService`: Manages patient appointment viewing and cancellation
+  - `PatientProfileService`: Handles patient profile updates with field restrictions
 
 **Eloquent Models**
 - Database abstraction and ORM
@@ -199,10 +203,21 @@ The application is designed for moderate scale:
 
 ### Authentication
 
-- Laravel Fortify for authentication
+**Staff Authentication:**
+- Laravel Fortify for staff authentication
 - Two-factor authentication support
 - Secure password hashing (bcrypt)
 - Session-based authentication with CSRF protection
+- Uses `web` guard for staff users
+
+**Patient Authentication:**
+- Magic link (passwordless) authentication for patients
+- Separate `patient` guard for patient authentication
+- Email-based token verification
+- Single-use tokens with 30-minute expiration
+- Session-based authentication with CSRF protection
+- Patients use `PatientAuthService` for authentication logic
+- Guard separation ensures patients cannot access staff routes and vice versa
 
 ### Authorization
 

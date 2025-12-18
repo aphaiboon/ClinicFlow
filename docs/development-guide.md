@@ -128,6 +128,10 @@ php artisan test --filter=creates_patient
 
 # Run tests with coverage
 php artisan test --coverage
+
+# Run patient portal tests
+php artisan test tests/Feature/Patient/
+php artisan test tests/Browser/Patient/
 ```
 
 ## Git Workflow
@@ -239,6 +243,173 @@ Brief description of changes
 - Security implications
 - Documentation completeness
 - Breaking changes identified
+
+## Patient Authentication Development
+
+### Patient Guard Usage
+
+Patients use a separate authentication guard (`patient`) from staff users (`web`). This ensures complete separation between patient and staff authentication.
+
+**Route Protection:**
+```php
+// Patient routes use auth:patient middleware
+Route::middleware('auth:patient')->prefix('patient')->name('patient.')->group(function () {
+    Route::get('dashboard', [PatientDashboardController::class, 'index'])->name('dashboard');
+    // ...
+});
+```
+
+**Controller Authentication:**
+```php
+// In controllers, use the patient guard
+$patient = Auth::guard('patient')->user();
+```
+
+**Testing Patient Authentication:**
+```php
+// Use actingAs with patient guard
+$patient = Patient::factory()->create();
+$this->actingAs($patient, 'patient')
+    ->get(route('patient.dashboard'))
+    ->assertOk();
+```
+
+### Magic Link Authentication Pattern
+
+Patient authentication uses passwordless magic links:
+
+1. **Request Magic Link**: Patient enters email, system generates token
+2. **Token Storage**: Token stored in cache with 30-minute expiration
+3. **Email Notification**: Magic link sent via email
+4. **Token Verification**: Single-use token verified and removed
+5. **Session Creation**: Patient authenticated and session created
+
+**Service Pattern:**
+```php
+// PatientAuthService handles all authentication logic
+$authService = app(PatientAuthService::class);
+$authService->sendMagicLink('patient@example.com');
+$patient = $authService->verifyMagicLink($token);
+```
+
+### Service Layer Patterns for Patient Features
+
+Patient-specific services follow the same patterns as staff services:
+
+- **PatientAuthService**: Magic link generation and verification
+- **PatientAppointmentService**: Appointment viewing and cancellation with business rules
+- **PatientProfileService**: Profile updates with field restrictions
+
+**Example Service:**
+```php
+class PatientAppointmentService
+{
+    public function cancelAppointment(Patient $patient, Appointment $appointment, ?string $reason = null): Appointment
+    {
+        // Business rule: 24-hour window
+        if (! $this->canCancelAppointment($patient, $appointment)) {
+            throw new \RuntimeException('Cannot cancel within 24 hours');
+        }
+        
+        return DB::transaction(function () use ($appointment, $reason) {
+            $appointment->update([
+                'status' => AppointmentStatus::Cancelled,
+                'cancellation_reason' => $reason,
+            ]);
+            
+            return $appointment->fresh();
+        });
+    }
+}
+```
+
+### Patient-Specific Routes and Middleware
+
+All patient routes are prefixed with `/patient` and use the `auth:patient` middleware:
+
+- `/patient/login` - Patient login (guest:patient)
+- `/patient/dashboard` - Patient dashboard (auth:patient)
+- `/patient/appointments` - Patient appointments (auth:patient)
+- `/patient/profile` - Patient profile (auth:patient)
+
+**Middleware Separation:**
+- Staff routes use `auth` (defaults to `web` guard)
+- Patient routes use `auth:patient` guard
+- Guards are completely separate - patients cannot access staff routes and vice versa
+
+## Patient Testing Guidelines
+
+### Testing Patient Authentication
+
+```php
+// Test magic link request
+test('patient can request magic link', function () {
+    Notification::fake();
+    $patient = Patient::factory()->create(['email' => 'patient@example.com']);
+    
+    $response = $this->post(route('patient.login.request'), [
+        'email' => 'patient@example.com',
+    ]);
+    
+    Notification::assertSentTo($patient, PatientMagicLinkNotification::class);
+});
+
+// Test magic link verification
+test('patient can verify magic link', function () {
+    $patient = Patient::factory()->create();
+    $token = app(PatientAuthService::class)->generateMagicLinkToken($patient);
+    Cache::put("patient_magic_link:{$token}", $patient->id, now()->addMinutes(30));
+    
+    $response = $this->get(route('patient.verify', ['token' => $token]));
+    
+    $this->assertAuthenticated('patient');
+});
+```
+
+### Testing Patient-Specific Routes
+
+```php
+// Test patient dashboard access
+test('patient can access dashboard', function () {
+    $patient = Patient::factory()->create();
+    
+    $response = $this->actingAs($patient, 'patient')
+        ->get(route('patient.dashboard'));
+    
+    $response->assertOk();
+});
+
+// Test guard separation
+test('staff cannot access patient routes', function () {
+    $user = User::factory()->create();
+    
+    $response = $this->actingAs($user)
+        ->get(route('patient.dashboard'));
+    
+    $response->assertRedirect(route('login'));
+});
+```
+
+### Testing Patient Policies
+
+```php
+// Test patient policy methods
+test('patient can view own profile', function () {
+    $patient = Patient::factory()->create();
+    $policy = new PatientPolicy();
+    
+    expect($policy->patientView($patient, $patient))->toBeTrue();
+});
+
+// Test patient cannot view other patients
+test('patient cannot view other patients profile', function () {
+    $patient1 = Patient::factory()->create();
+    $patient2 = Patient::factory()->create();
+    $policy = new PatientPolicy();
+    
+    expect($policy->patientView($patient1, $patient2))->toBeFalse();
+});
+```
 
 ## Architecture Guidelines
 

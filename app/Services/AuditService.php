@@ -17,12 +17,21 @@ class AuditService
         ?array $changes = null,
         ?array $metadata = null
     ): AuditLog {
-        // Check both web and patient guards
-        $user = Auth::user();
+        // Check both web and patient guards explicitly
+        // Use guard() to ensure we're checking the correct guard
+        $user = Auth::guard('web')->user();
         $patient = Auth::guard('patient')->user();
 
+        // If patient is authenticated, user_id must be null
+        // Explicitly set to null to prevent foreign key constraint violations
+        if ($patient) {
+            $userId = null;
+        } else {
+            $userId = $user?->id;
+        }
+
         $auditData = [
-            'user_id' => $user?->id,
+            'user_id' => $userId,
             'action' => $action,
             'resource_type' => $resourceType,
             'resource_id' => $resourceId,
@@ -40,7 +49,7 @@ class AuditService
         }
 
         // Add patient info to metadata if action was performed by patient
-        if ($patient && ! $user) {
+        if ($patient) {
             $auditData['metadata'] = array_merge($auditData['metadata'] ?? [], [
                 'patient_id' => $patient->id,
                 'performed_by' => 'patient',

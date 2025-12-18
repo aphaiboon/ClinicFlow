@@ -6,6 +6,185 @@ This document describes the data flows and operational sequences within ClinicFl
 
 ## Normal Operation Flows
 
+### Patient Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant Patient as Patient
+    participant Frontend as React Frontend
+    participant Backend as Laravel Backend
+    participant AuthService as PatientAuthService
+    participant Cache as Cache Layer
+    participant Email as Email Service
+    participant DB as Database
+
+    Patient->>Frontend: Enter email address
+    Frontend->>Backend: POST /patient/login (email)
+    Backend->>Backend: Validate email exists
+    Backend->>AuthService: sendMagicLink(email)
+    AuthService->>DB: Find patient by email
+    DB-->>AuthService: Patient entity
+    AuthService->>AuthService: Generate secure token
+    AuthService->>Cache: Store token (30 min expiration)
+    AuthService->>Email: Send magic link email
+    Email-->>Patient: Magic link email
+    Backend-->>Frontend: Success message
+    Frontend->>Patient: Display "Check your email"
+    
+    Patient->>Email: Click magic link
+    Email->>Backend: GET /patient/verify/{token}
+    Backend->>AuthService: verifyMagicLink(token)
+    AuthService->>Cache: Retrieve patient ID
+    Cache-->>AuthService: Patient ID
+    AuthService->>Cache: Remove token (single-use)
+    AuthService->>DB: Load patient
+    DB-->>AuthService: Patient entity
+    AuthService->>Backend: Authenticate patient
+    Backend->>Backend: Create session
+    Backend-->>Frontend: Redirect to dashboard
+    Frontend->>Patient: Display patient portal
+```
+
+**Key Steps:**
+1. Patient enters email address on login page
+2. System validates email exists in database
+3. Service generates secure token and stores in cache (30-minute expiration)
+4. Magic link email sent to patient
+5. Patient clicks link in email
+6. System verifies token and retrieves patient ID
+7. Token removed from cache (single-use)
+8. Patient authenticated and session created
+9. Patient redirected to dashboard
+
+### Patient Portal Access Flow
+
+```mermaid
+sequenceDiagram
+    participant Patient as Patient
+    participant Frontend as React Frontend
+    participant Backend as Laravel Backend
+    participant Middleware as Auth Middleware
+    participant Controller as Patient Controller
+    participant Service as Patient Service
+    participant DB as Database
+
+    Patient->>Frontend: Navigate to portal route
+    Frontend->>Backend: GET /patient/dashboard
+    Backend->>Middleware: Check auth:patient guard
+    alt Not authenticated
+        Middleware-->>Frontend: Redirect to /patient/login
+        Frontend->>Patient: Show login page
+    else Authenticated
+        Middleware->>Controller: Proceed to controller
+        Controller->>Service: Get patient data
+        Service->>DB: Query patient appointments
+        DB-->>Service: Appointment data
+        Service-->>Controller: Formatted data
+        Controller->>Frontend: Inertia response
+        Frontend->>Patient: Display portal page
+    end
+```
+
+**Key Steps:**
+1. Patient attempts to access portal route
+2. Middleware checks `auth:patient` guard
+3. If not authenticated, redirect to login
+4. If authenticated, load patient data and appointments
+5. Return Inertia response with data
+6. Frontend renders patient portal
+
+### Patient Appointment Management Flow
+
+```mermaid
+sequenceDiagram
+    participant Patient as Patient
+    participant Frontend as React Frontend
+    participant Backend as Laravel Backend
+    participant Service as PatientAppointmentService
+    participant DB as Database
+    participant Audit as Audit Logger
+
+    Patient->>Frontend: View appointments
+    Frontend->>Backend: GET /patient/appointments
+    Backend->>Service: getPatientAppointments(patientId)
+    Service->>DB: Query patient appointments
+    DB-->>Service: Appointment collection
+    Service-->>Backend: Filtered appointments
+    Backend->>Frontend: Return appointments
+    Frontend->>Patient: Display appointment list
+
+    Patient->>Frontend: Cancel appointment
+    Frontend->>Backend: POST /patient/appointments/{id}/cancel
+    Backend->>Service: cancelAppointment(patient, appointment, reason)
+    Service->>Service: Check cancellation rules (24-hour window)
+    alt Can cancel
+        Service->>DB: Update appointment status
+        Service->>Audit: Log cancellation
+        DB-->>Service: Updated appointment
+        Service-->>Backend: Success
+        Backend->>Frontend: Success message
+        Frontend->>Patient: Display confirmation
+    else Cannot cancel
+        Service-->>Backend: Error (too close to appointment)
+        Backend->>Frontend: Error message
+        Frontend->>Patient: Display error
+    end
+```
+
+**Key Steps:**
+1. Patient views their appointments (filtered by patient ID)
+2. Patient attempts to cancel appointment
+3. Service checks business rules (24-hour window, status)
+4. If allowed, appointment status updated to cancelled
+5. Audit log created for cancellation
+6. Success or error response returned
+
+### Patient Profile Management Flow
+
+```mermaid
+sequenceDiagram
+    participant Patient as Patient
+    participant Frontend as React Frontend
+    participant Backend as Laravel Backend
+    participant Service as PatientProfileService
+    participant DB as Database
+    participant Audit as Audit Logger
+
+    Patient->>Frontend: View profile
+    Frontend->>Backend: GET /patient/profile
+    Backend->>Service: getEditableFields()
+    Service-->>Backend: Editable fields list
+    Backend->>Frontend: Return profile data
+    Frontend->>Patient: Display profile
+
+    Patient->>Frontend: Update profile
+    Frontend->>Backend: PUT /patient/profile (data)
+    Backend->>Service: updatePatientProfile(patient, data)
+    Service->>Service: Remove immutable fields
+    Service->>Service: Validate editable fields
+    alt Valid data
+        Service->>DB: Update patient record
+        Service->>Audit: Log profile update
+        DB-->>Service: Updated patient
+        Service-->>Backend: Success
+        Backend->>Frontend: Success message
+        Frontend->>Patient: Display confirmation
+    else Invalid data
+        Service-->>Backend: Validation errors
+        Backend->>Frontend: Error messages
+        Frontend->>Patient: Display errors
+    end
+```
+
+**Key Steps:**
+1. Patient views their profile
+2. Patient updates editable fields (email, phone, address)
+3. Service removes immutable fields (MRN, DOB, name)
+4. Service validates remaining fields
+5. If valid, patient record updated
+6. Audit log created for profile update
+7. Success or validation errors returned
+
 ### Patient Registration Flow
 
 ```mermaid

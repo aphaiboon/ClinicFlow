@@ -104,3 +104,30 @@ it('prevents receptionist from deleting patients', function () {
 
     expect($this->policy->delete($this->receptionist, $patient))->toBeFalse();
 });
+
+it('allows patient to view their own profile', function () {
+    $patient = Patient::factory()->for($this->organization)->create();
+    $otherPatient = Patient::factory()->for($this->organization)->create();
+
+    expect($this->policy->patientView($patient, $patient))->toBeTrue();
+    expect($this->policy->patientView($patient, $otherPatient))->toBeFalse();
+});
+
+it('allows patient to update their own profile', function () {
+    $patient = Patient::factory()->for($this->organization)->create();
+    $otherPatient = Patient::factory()->for($this->organization)->create();
+
+    expect($this->policy->patientUpdate($patient, $patient))->toBeTrue();
+    expect($this->policy->patientUpdate($patient, $otherPatient))->toBeFalse();
+});
+
+it('staff policies remain unchanged after patient methods added', function () {
+    $patient = Patient::factory()->for($this->organization)->create();
+
+    expect($this->policy->view($this->admin, $patient))->toBeTrue();
+    expect($this->policy->view($this->clinician, $patient))->toBeTrue();
+    expect($this->policy->view($this->receptionist, $patient))->toBeTrue();
+    expect($this->policy->create($this->admin))->toBeTrue();
+    expect($this->policy->create($this->receptionist))->toBeTrue();
+    expect($this->policy->create($this->clinician))->toBeFalse();
+});

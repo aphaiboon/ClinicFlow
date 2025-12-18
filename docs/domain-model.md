@@ -19,7 +19,10 @@ Represents a registered patient in the clinic system. Contains synthetic demogra
 - `date_of_birth`: Patient date of birth
 - `gender`: Patient gender (enum)
 - `phone`: Contact phone number
-- `email`: Contact email address (optional)
+- `email`: Contact email address (required for authentication, must be unique)
+- `password`: Hashed password (nullable, for future password-based authentication)
+- `email_verified_at`: Email verification timestamp (nullable)
+- `remember_token`: Remember me token for session persistence (nullable)
 - `address_line_1`: Primary address line
 - `address_line_2`: Secondary address line (optional)
 - `city`: City
@@ -29,12 +32,22 @@ Represents a registered patient in the clinic system. Contains synthetic demogra
 - `created_at`: Record creation timestamp
 - `updated_at`: Record last update timestamp
 
+**Authentication Capabilities:**
+- Patients can authenticate using magic link authentication (passwordless)
+- Patients use a separate authentication guard (`patient`) from staff users
+- Email addresses must be unique across all patients for authentication
+- Magic links expire after 30 minutes and are single-use tokens
+- Patients can access their own portal to view appointments and manage profile
+
 **Business Rules:**
 - Medical record number must be unique within an organization
 - Date of birth must be in the past
-- Email, if provided, must be valid format
+- Email is required and must be unique for authentication
+- Email must be valid format
 - All address fields required except address_line_2
 - Patient must belong to an organization
+- Patients can only view and manage their own appointments and profile
+- Patients can cancel appointments only if at least 24 hours before appointment time
 
 ### Appointment
 
@@ -66,6 +79,8 @@ Represents a scheduled appointment between a patient and a clinician. Each appoi
 - Cancellation requires cancellation_reason if status is cancelled
 - Appointment must belong to an organization
 - Patient, user, and exam room must belong to the same organization
+- Patients can cancel their own appointments only if at least 24 hours before appointment time
+- Patients can only view their own appointments
 
 ### ExamRoom
 
