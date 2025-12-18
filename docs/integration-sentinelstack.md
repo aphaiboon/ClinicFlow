@@ -72,7 +72,7 @@ All events MUST include the following envelope:
 - `timestamp`: ISO 8601 UTC format (e.g., `2025-12-17T21:30:20Z`)
 - `service`: Service metadata (service_id, version, instance_id, region)
 - `environment`: Environment name (e.g., "production", "staging", "development")
-- `tenant_id`: Tenant identifier (for multi-tenant scenarios)
+- `tenant_id`: Organization identifier (dynamically set from `organization_id` of the resource or user's current organization; falls back to config value if not available)
 - `actor`: User context (user_id, user_email, ip_address, user_agent)
 - `correlation`: Request correlation IDs (request_id, trace_id, session_id)
 - `payload`: Event-specific data
@@ -169,7 +169,7 @@ ClinicFlow implements SentinelStack integration through:
 
 1. **Event ID Generation**: `EventIdGenerator` service generates ULID-based event IDs with "evt_" prefix
 2. **Request Context Middleware**: `CaptureRequestContext` middleware captures request_id, trace_id, and session_id globally
-3. **Event Envelope Builder**: `EventEnvelopeBuilder` service builds standardized event envelopes with all required fields
+3. **Event Envelope Builder**: `EventEnvelopeBuilder` service builds standardized event envelopes with all required fields. The `tenant_id` field is dynamically set from the `organization_id` of the event resource (patient, appointment, etc.) or the user's current organization, ensuring proper multi-tenant isolation
 4. **SentinelStack Client**: `SentinelStackClientInterface` with `ingestEvent()` and `ingestEvents()` methods
 5. **Domain Event Forwarding**: `ForwardToSentinelStack` listener forwards domain events as `domain_event` type
 6. **Audit Log Forwarding**: Audit logs forwarded as `audit_log` event type for compliance
