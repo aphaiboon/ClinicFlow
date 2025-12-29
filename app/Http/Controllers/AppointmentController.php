@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AppointmentStatus;
+use App\Enums\OrganizationRole;
 use App\Http\Requests\AssignRoomRequest;
 use App\Http\Requests\CancelAppointmentRequest;
 use App\Http\Requests\StoreAppointmentRequest;
@@ -9,6 +11,9 @@ use App\Http\Requests\UpdateAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\ExamRoom;
 use App\Services\AppointmentService;
+use App\Services\ExamRoomAvailabilityService;
+use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,7 +22,8 @@ use Inertia\Response;
 class AppointmentController extends Controller
 {
     public function __construct(
-        protected AppointmentService $appointmentService
+        protected AppointmentService $appointmentService,
+        protected ExamRoomAvailabilityService $roomAvailabilityService
     ) {}
 
     public function index(Request $request): Response
@@ -149,5 +155,136 @@ class AppointmentController extends Controller
         } catch (\RuntimeException $e) {
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
+    }
+
+    public function calendar(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Appointment::class);
+
+        $user = $request->user();
+        $organization = $user->currentOrganization;
+
+        if (! $organization) {
+            return response()->json(['events' => []]);
+        }
+
+        // Determine date range
+        $startDate = $request->has('start_date')
+            ? Carbon::parse($request->get('start_date'))
+            : now()->startOfWeek();
+        $endDate = $request->has('end_date')
+            ? Carbon::parse($request->get('end_date'))
+            : now()->endOfWeek();
+
+        // Build query with eager loading
+        $query = Appointment::query()
+            ->with(['patient', 'user', 'examRoom'])
+            ->where('organization_id', $organization->id)
+            ->whereDate('appointment_date', '>=', $startDate->toDateString())
+            ->whereDate('appointment_date', '<=', $endDate->toDateString())
+            ->whereNotIn('status', [AppointmentStatus::Cancelled]);
+
+        // Role-based filtering
+        if ($user->isSuperAdmin()) {
+            // Super admin sees all appointments
+        } else {
+            $orgRole = $user->getOrganizationRole($organization);
+
+            if ($orgRole === OrganizationRole::Clinician) {
+                // Clinicians see only their scheduled appointments
+                $query->where('user_id', $user->id);
+            } elseif (in_array($orgRole, [OrganizationRole::Admin, OrganizationRole::Owner, OrganizationRole::Receptionist])) {
+                // Admins, Owners, and Receptionists see all organization appointments
+            }
+        }
+
+        // Filter by exam room if provided
+        $examRoomId = $request->query('exam_room_id');
+        if ($examRoomId !== null && $examRoomId !== '') {
+            $query->where('exam_room_id', (int) $examRoomId);
+        }
+
+        $appointments = $query->get();
+
+        // Format appointments for FullCalendar
+        $events = $appointments->map(function (Appointment $appointment) {
+            $startDateTime = Carbon::parse($appointment->appointment_date)
+                ->setTimeFromTimeString($appointment->appointment_time);
+            $endDateTime = $startDateTime->copy()->addMinutes($appointment->duration_minutes);
+
+            $patientName = $appointment->patient
+                ? "{$appointment->patient->first_name} {$appointment->patient->last_name}"
+                : 'Unknown Patient';
+
+            $clinicianName = $appointment->user?->name ?? 'Unknown Clinician';
+
+            // Determine event color based on status
+            $colors = [
+                AppointmentStatus::Scheduled->value => '#3b82f6', // blue
+                AppointmentStatus::InProgress->value => '#f97316', // orange
+                AppointmentStatus::Completed->value => '#22c55e', // green
+                AppointmentStatus::NoShow->value => '#ef4444', // red
+            ];
+
+            $statusColor = $colors[$appointment->status->value] ?? '#6b7280';
+
+            return [
+                'id' => "appointment-{$appointment->id}",
+                'title' => $patientName,
+                'start' => $startDateTime->toIso8601String(),
+                'end' => $endDateTime->toIso8601String(),
+                'backgroundColor' => $statusColor,
+                'borderColor' => $statusColor,
+                'textColor' => '#ffffff',
+                'extendedProps' => [
+                    'appointmentId' => $appointment->id,
+                    'patientId' => $appointment->patient_id,
+                    'patientName' => $patientName,
+                    'clinicianId' => $appointment->user_id,
+                    'clinicianName' => $clinicianName,
+                    'examRoomId' => $appointment->exam_room_id,
+                    'examRoomName' => $appointment->examRoom?->name,
+                    'status' => $appointment->status->value,
+                    'appointmentType' => $appointment->appointment_type->value,
+                    'durationMinutes' => $appointment->duration_minutes,
+                    'notes' => $appointment->notes,
+                ],
+            ];
+        });
+
+        return response()->json(['events' => $events]);
+    }
+
+    public function availableRooms(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Appointment::class);
+
+        $user = $request->user();
+        $organization = $user->currentOrganization;
+
+        if (! $organization) {
+            return response()->json(['rooms' => []]);
+        }
+
+        // Determine date range
+        $startDate = $request->has('start_date')
+            ? Carbon::parse($request->get('start_date'))
+            : now()->startOfDay();
+        $endDate = $request->has('end_date')
+            ? Carbon::parse($request->get('end_date'))
+            : now()->endOfDay();
+
+        // Get optional room filter
+        $roomId = $request->filled('room_id') ? (int) $request->get('room_id') : null;
+
+        // Get room availability
+        $availability = $this->roomAvailabilityService->getAvailabilityForDateRange(
+            $startDate,
+            $endDate,
+            $roomId,
+            $organization->id
+        );
+
+        return response()->json(['rooms' => $availability->values()]);
     }
 }

@@ -120,3 +120,52 @@ export interface AuditLog {
     user?: User;
     created_at: string;
 }
+
+export type CalendarViewType = 'list' | 'day' | 'week' | 'month';
+
+export interface CalendarEvent {
+    id: string;
+    title: string;
+    start: string;
+    end: string;
+    allDay?: boolean;
+    backgroundColor?: string;
+    borderColor?: string;
+    textColor?: string;
+    extendedProps: {
+        appointmentId: number;
+        patientId: number;
+        patientName: string;
+        clinicianId: number;
+        clinicianName: string;
+        examRoomId?: number;
+        examRoomName?: string;
+        status: string;
+        appointmentType: string;
+        durationMinutes: number;
+        notes?: string;
+    };
+}
+
+export interface RoomAvailability {
+    roomId: number;
+    roomName: string;
+    roomNumber: string;
+    isActive: boolean;
+    availability: 'available' | 'busy' | 'unavailable';
+    conflictingAppointments?: Array<{
+        id: number;
+        start: string;
+        end: string;
+        patientName: string;
+    }>;
+}
+
+export interface CalendarFilters {
+    start_date?: string;
+    end_date?: string;
+    view?: CalendarViewType;
+    exam_room_id?: number;
+    status?: string;
+    clinician_id?: number;
+}

@@ -45,6 +45,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('patients', \App\Http\Controllers\PatientController::class);
+    Route::get('appointments/calendar', [\App\Http\Controllers\AppointmentController::class, 'calendar'])->name('appointments.calendar');
+    Route::get('appointments/available-rooms', [\App\Http\Controllers\AppointmentController::class, 'availableRooms'])->name('appointments.available-rooms');
     Route::resource('appointments', \App\Http\Controllers\AppointmentController::class);
     Route::post('appointments/{appointment}/cancel', [\App\Http\Controllers\AppointmentController::class, 'cancel'])->name('appointments.cancel');
     Route::post('appointments/{appointment}/assign-room', [\App\Http\Controllers\AppointmentController::class, 'assignRoom'])->name('appointments.assign-room');
