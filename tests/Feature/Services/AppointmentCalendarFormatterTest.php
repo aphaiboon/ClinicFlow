@@ -110,7 +110,7 @@ test('uses correct color for completed status', function () {
 
     $event = $this->formatter->format($appointment);
 
-    expect($event['backgroundColor'])->toBe('#22c55e'); // Green
+    expect($event['backgroundColor'])->toBe('#10b981'); // Green
 });
 
 test('uses correct color for no_show status', function () {
@@ -121,7 +121,7 @@ test('uses correct color for no_show status', function () {
 
     $event = $this->formatter->format($appointment);
 
-    expect($event['backgroundColor'])->toBe('#ef4444'); // Red
+    expect($event['backgroundColor'])->toBe('#6b7280'); // Gray for NoShow
 });
 
 test('handles missing patient gracefully', function () {
