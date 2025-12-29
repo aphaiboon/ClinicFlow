@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Models\Patient;
 use App\Models\User;
 use App\Services\AppointmentCalendarFormatter;
+use App\Services\AppointmentStatusColorMapper;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -24,7 +25,8 @@ beforeEach(function () {
         'name' => 'Room A',
         'room_number' => '101',
     ]);
-    $this->formatter = new AppointmentCalendarFormatter;
+    $colorMapper = new AppointmentStatusColorMapper;
+    $this->formatter = new AppointmentCalendarFormatter($colorMapper);
 });
 
 test('formats appointment with all fields for calendar', function () {
