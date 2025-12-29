@@ -8,6 +8,10 @@ use Carbon\Carbon;
 
 class AppointmentCalendarFormatter
 {
+    public function __construct(
+        private AppointmentStatusColorMapper $colorMapper
+    ) {}
+
     /**
      * Format an appointment for FullCalendar display.
      *
@@ -25,7 +29,7 @@ class AppointmentCalendarFormatter
 
         $clinicianName = $appointment->user?->name ?? 'Unknown Clinician';
 
-        $statusColor = $this->getStatusColor($appointment->status);
+        $statusColor = $this->colorMapper->getColor($appointment->status);
 
         return [
             'id' => "appointment-{$appointment->id}",
