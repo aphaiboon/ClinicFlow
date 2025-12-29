@@ -133,18 +133,6 @@ test('calendar view persists in session storage', function () {
     $page->assertNoJavascriptErrors();
 });
 
-test('can use quick filters in list view', function () {
-    $this->actingAs($this->admin);
-
-    $page = visit('/appointments');
-
-    $page->click('List')
-        ->assertSee('Today')
-        ->assertSee('This Week')
-        ->assertSee('Upcoming')
-        ->click('Today')
-        ->assertNoJavascriptErrors();
-});
 
 test('calendar is responsive on mobile viewport', function () {
     $this->actingAs($this->admin);

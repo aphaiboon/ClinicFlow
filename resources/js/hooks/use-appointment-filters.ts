@@ -49,18 +49,37 @@ export function useAppointmentFilters({ initialFilters }: UseAppointmentFiltersP
 
     const updateQuickFilters = useCallback(
         (quickFilters: { date?: string; status?: string }) => {
-            const params: Record<string, string> = { ...initialFilters };
+            const params: Record<string, string> = {};
+            
+            // Build params from current filters and new quick filters
             if (quickFilters.date) {
                 params.date = quickFilters.date;
-                setDateFilter(quickFilters.date);
+            } else if (dateFilter) {
+                params.date = dateFilter;
             }
+            
             if (quickFilters.status) {
                 params.status = quickFilters.status;
-                setStatusFilter(quickFilters.status);
+            } else if (statusFilter && statusFilter !== 'all') {
+                params.status = statusFilter;
             }
-            router.get(index().url, params, { preserveState: true });
+            
+            if (clinicianFilter && clinicianFilter !== 'all') {
+                params.clinician_id = clinicianFilter;
+            }
+            
+            if (examRoomFilter && examRoomFilter !== 'all') {
+                params.exam_room_id = examRoomFilter;
+            }
+            
+            // Use router.get with replace to update URL without adding to history
+            // Not using preserveState to avoid hydration mismatches during navigation
+            router.get(index().url, params, {
+                preserveScroll: true,
+                replace: true,
+            });
         },
-        [initialFilters],
+        [dateFilter, statusFilter, clinicianFilter, examRoomFilter],
     );
 
     return {

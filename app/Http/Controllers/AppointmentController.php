@@ -36,10 +36,8 @@ class AppointmentController extends Controller
         $this->authorize('viewAny', Appointment::class);
 
         $organization = auth()->user()->currentOrganization;
-        $appointments = $this->queryBuilder->getPaginatedAppointments(
-            $request,
-            $organization?->id
-        );
+
+        $appointments = $this->queryBuilder->buildIndexQuery($request, $organization?->id)->paginate(15)->withQueryString();
 
         return Inertia::render('Appointments/Index', [
             'appointments' => $appointments,
@@ -207,7 +205,7 @@ class AppointmentController extends Controller
         $appointments = $query->get();
 
         // Format appointments for FullCalendar
-        $events = $appointments->map(fn (Appointment $appointment) => $this->calendarFormatter->format($appointment));
+        $events = $appointments->map(fn(Appointment $appointment) => $this->calendarFormatter->format($appointment));
 
         return response()->json(['events' => $events]);
     }

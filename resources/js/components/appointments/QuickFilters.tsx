@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Calendar } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 
 interface QuickFiltersProps {
     onFilterChange: (filters: { date?: string; status?: string }) => void;
@@ -11,18 +11,26 @@ export default function QuickFilters({
     onFilterChange,
     activeFilter,
 }: QuickFiltersProps) {
-    const today = useMemo(() => {
-        const date = new Date();
-        return date.toISOString().split('T')[0];
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
     }, []);
 
+    const today = useMemo(() => {
+        if (!mounted) return '';
+        const date = new Date();
+        return date.toISOString().split('T')[0];
+    }, [mounted]);
+
     const thisWeekStart = useMemo(() => {
+        if (!mounted) return '';
         const date = new Date();
         const day = date.getDay();
         const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
         const monday = new Date(date.setDate(diff));
         return monday.toISOString().split('T')[0];
-    }, []);
+    }, [mounted]);
 
     const handleToday = () => {
         onFilterChange({ date: today });
