@@ -28,6 +28,9 @@ interface AppointmentFormProps {
     clinicians: User[];
     examRooms?: ExamRoom[];
     errors?: Record<string, string>;
+    preselectedDate?: string;
+    preselectedTime?: string;
+    onSuccess?: () => void;
 }
 
 export function AppointmentForm({
@@ -38,24 +41,27 @@ export function AppointmentForm({
     clinicians,
     examRooms = [],
     errors: formErrors,
+    preselectedDate,
+    preselectedTime,
+    onSuccess,
 }: AppointmentFormProps) {
     const [appointmentType, setAppointmentType] = useState(
         appointment?.appointment_type || 'routine',
     );
-    const [patientId, setPatientId] = useState<string>(
-        appointment?.patient_id?.toString() || '',
+    const [patientId, setPatientId] = useState<string | undefined>(
+        appointment?.patient_id?.toString() || undefined,
     );
-    const [userId, setUserId] = useState<string>(
-        appointment?.user_id?.toString() || '',
+    const [userId, setUserId] = useState<string | undefined>(
+        appointment?.user_id?.toString() || undefined,
     );
-    const [examRoomId, setExamRoomId] = useState<string>(
-        appointment?.exam_room_id?.toString() || '',
+    const [examRoomId, setExamRoomId] = useState<string | undefined>(
+        appointment?.exam_room_id?.toString() || undefined,
     );
 
     const appointmentDate = appointment?.appointment_date
         ? new Date(appointment.appointment_date).toISOString().split('T')[0]
-        : '';
-    const appointmentTime = appointment?.appointment_time || '';
+        : preselectedDate || '';
+    const appointmentTime = appointment?.appointment_time || preselectedTime || '';
 
     return (
         <>
@@ -65,7 +71,11 @@ export function AppointmentForm({
                     ? route.form() 
                     : { action: route.url, method: route.method };
                 return (
-                    <Form {...formProps} className="space-y-6">
+                    <Form
+                        {...formProps}
+                        className="space-y-6"
+                        {...(onSuccess ? { onSuccess } : {})}
+                    >
                 {({ processing: formProcessing, errors }) => (
                     <>
                         <input
@@ -76,10 +86,10 @@ export function AppointmentForm({
                         <input
                             type="hidden"
                             name="patient_id"
-                            value={patientId}
+                            value={patientId || ''}
                         />
-                        <input type="hidden" name="user_id" value={userId} />
-                        {examRoomId && (
+                        <input type="hidden" name="user_id" value={userId || ''} />
+                        {examRoomId && examRoomId !== 'none' && (
                             <input
                                 type="hidden"
                                 name="exam_room_id"
@@ -91,7 +101,7 @@ export function AppointmentForm({
                             <div className="grid gap-2">
                                 <Label htmlFor="patient_id">Patient *</Label>
                                 <Select
-                                    value={patientId}
+                                    value={patientId || undefined}
                                     onValueChange={setPatientId}
                                     required
                                 >
@@ -99,16 +109,22 @@ export function AppointmentForm({
                                         <SelectValue placeholder="Select patient" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {patients.map((patient) => (
-                                            <SelectItem
-                                                key={patient.id}
-                                                value={patient.id.toString()}
-                                            >
-                                                {patient.first_name}{' '}
-                                                {patient.last_name} (
-                                                {patient.medical_record_number})
+                                        {patients && patients.length > 0 ? (
+                                            patients.map((patient) => (
+                                                <SelectItem
+                                                    key={patient.id}
+                                                    value={patient.id.toString()}
+                                                >
+                                                    {patient.first_name}{' '}
+                                                    {patient.last_name} (
+                                                    {patient.medical_record_number})
+                                                </SelectItem>
+                                            ))
+                                        ) : (
+                                            <SelectItem value="no-patients" disabled>
+                                                No patients available
                                             </SelectItem>
-                                        ))}
+                                        )}
                                     </SelectContent>
                                 </Select>
                                 <InputError message={errors.patient_id} />
@@ -117,7 +133,7 @@ export function AppointmentForm({
                             <div className="grid gap-2">
                                 <Label htmlFor="user_id">Clinician *</Label>
                                 <Select
-                                    value={userId}
+                                    value={userId || undefined}
                                     onValueChange={setUserId}
                                     required
                                 >
@@ -125,14 +141,20 @@ export function AppointmentForm({
                                         <SelectValue placeholder="Select clinician" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {clinicians.map((clinician) => (
-                                            <SelectItem
-                                                key={clinician.id}
-                                                value={clinician.id.toString()}
-                                            >
-                                                {clinician.name}
+                                        {clinicians && clinicians.length > 0 ? (
+                                            clinicians.map((clinician) => (
+                                                <SelectItem
+                                                    key={clinician.id}
+                                                    value={clinician.id.toString()}
+                                                >
+                                                    {clinician.name}
+                                                </SelectItem>
+                                            ))
+                                        ) : (
+                                            <SelectItem value="no-clinicians" disabled>
+                                                No clinicians available
                                             </SelectItem>
-                                        ))}
+                                        )}
                                     </SelectContent>
                                 </Select>
                                 <InputError message={errors.user_id} />
@@ -221,14 +243,14 @@ export function AppointmentForm({
                                     Exam Room (Optional)
                                 </Label>
                                 <Select
-                                    value={examRoomId}
-                                    onValueChange={setExamRoomId}
+                                    value={examRoomId || undefined}
+                                    onValueChange={(value) => setExamRoomId(value === 'none' ? undefined : value)}
                                 >
                                     <SelectTrigger id="exam_room_id">
                                         <SelectValue placeholder="Select room (optional)" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="">None</SelectItem>
+                                        <SelectItem value="none">None</SelectItem>
                                         {examRooms.map((room) => (
                                             <SelectItem
                                                 key={room.id}

@@ -234,4 +234,102 @@ class AppointmentService
             return $requestStartMinutes < $apptEndMinutes && $requestEndMinutes > $apptStartMinutes;
         });
     }
+
+    public function checkRescheduleConflicts(
+        Appointment $appointment,
+        Carbon $newDate,
+        Carbon $newTime,
+        int $duration
+    ): array {
+        $conflicts = [];
+
+        // Create proper datetime objects for comparison
+        $newStart = $newDate->copy()->setTime($newTime->hour, $newTime->minute, 0);
+        $newEnd = $newStart->copy()->addMinutes($duration);
+
+        // Check clinician availability
+        $clinicianConflicts = Appointment::where('user_id', $appointment->user_id)
+            ->where('id', '!=', $appointment->id)
+            ->where('organization_id', $appointment->organization_id)
+            ->whereDate('appointment_date', $newDate->toDateString())
+            ->whereNotIn('status', [AppointmentStatus::Cancelled])
+            ->with('patient')
+            ->get()
+            ->filter(function (Appointment $existing) use ($newStart, $newEnd) {
+                $existingStart = Carbon::parse($existing->appointment_date)
+                    ->setTimeFromTimeString($existing->appointment_time);
+                $existingEnd = $existingStart->copy()->addMinutes($existing->duration_minutes);
+
+                // Check if appointments overlap: newStart < existingEnd AND newEnd > existingStart
+                return $newStart->lt($existingEnd) && $newEnd->gt($existingStart);
+            });
+
+        if ($clinicianConflicts->isNotEmpty()) {
+            $conflicts[] = [
+                'type' => 'clinician',
+                'message' => 'Clinician has a conflicting appointment at this time.',
+                'conflictingAppointments' => $clinicianConflicts->map(function ($apt) {
+                    return [
+                        'id' => $apt->id,
+                        'patientName' => $apt->patient ? "{$apt->patient->first_name} {$apt->patient->last_name}" : 'Unknown',
+                        'time' => "{$apt->appointment_time} - ".Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
+                    ];
+                })->toArray(),
+            ];
+        }
+
+        // Check exam room availability (if room is assigned)
+        if ($appointment->exam_room_id) {
+            $roomConflicts = Appointment::where('exam_room_id', $appointment->exam_room_id)
+                ->where('id', '!=', $appointment->id)
+                ->where('organization_id', $appointment->organization_id)
+                ->whereDate('appointment_date', $newDate->toDateString())
+                ->whereNotIn('status', [AppointmentStatus::Cancelled])
+                ->with('patient')
+                ->get()
+                ->filter(function (Appointment $existing) use ($newStart, $newEnd) {
+                    $existingStart = Carbon::parse($existing->appointment_date)
+                        ->setTimeFromTimeString($existing->appointment_time);
+                    $existingEnd = $existingStart->copy()->addMinutes($existing->duration_minutes);
+
+                    // Check if appointments overlap: newStart < existingEnd AND newEnd > existingStart
+                    return $newStart->lt($existingEnd) && $newEnd->gt($existingStart);
+                });
+
+            if ($roomConflicts->isNotEmpty()) {
+                $conflicts[] = [
+                    'type' => 'room',
+                    'message' => 'Exam room is occupied at this time.',
+                    'conflictingAppointments' => $roomConflicts->map(function ($apt) {
+                        return [
+                            'id' => $apt->id,
+                            'patientName' => $apt->patient ? "{$apt->patient->first_name} {$apt->patient->last_name}" : 'Unknown',
+                            'time' => "{$apt->appointment_time} - ".Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
+                        ];
+                    })->toArray(),
+                ];
+            }
+        }
+
+        return $conflicts;
+    }
+
+    public function rescheduleAppointment(
+        Appointment $appointment,
+        Carbon $newDate,
+        Carbon $newTime,
+        int $duration
+    ): Appointment {
+        return DB::transaction(function () use ($appointment, $newDate, $newTime, $duration) {
+            $appointment->update([
+                'appointment_date' => $newDate->toDateString(),
+                'appointment_time' => $newTime->format('H:i:s'),
+                'duration_minutes' => $duration,
+            ]);
+
+            event(new AppointmentUpdated($appointment));
+
+            return $appointment->fresh();
+        });
+    }
 }

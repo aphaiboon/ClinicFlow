@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'role',
         'current_organization_id',
+        'calendar_time_slot_interval',
     ];
 
     protected $hidden = [
@@ -39,6 +40,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
             'role' => UserRole::class,
+            'calendar_time_slot_interval' => 'integer',
         ];
     }
 

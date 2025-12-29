@@ -28,12 +28,18 @@ class Organization extends Model
         'practice_type',
         'license_number',
         'is_active',
+        'operating_hours_start',
+        'operating_hours_end',
+        'default_time_slot_interval',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'operating_hours_start' => 'string',
+            'operating_hours_end' => 'string',
+            'default_time_slot_interval' => 'integer',
         ];
     }
 

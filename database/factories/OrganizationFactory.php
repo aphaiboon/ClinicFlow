@@ -30,6 +30,9 @@ class OrganizationFactory extends Factory
             'practice_type' => fake()->optional()->randomElement(['primary_care', 'specialty', 'urgent_care', 'surgical']),
             'license_number' => fake()->optional()->regexify('[A-Z]{2}-[0-9]{6}'),
             'is_active' => true,
+            'operating_hours_start' => '08:00:00',
+            'operating_hours_end' => '18:00:00',
+            'default_time_slot_interval' => 15,
         ];
     }
 

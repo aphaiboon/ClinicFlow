@@ -13,6 +13,8 @@ interface AppointmentsCreateProps {
     patients: Patient[];
     clinicians: User[];
     examRooms: ExamRoom[];
+    preselectedDate?: string;
+    preselectedTime?: string;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -34,6 +36,8 @@ export default function Create({
     patients,
     clinicians,
     examRooms,
+    preselectedDate,
+    preselectedTime,
 }: AppointmentsCreateProps) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -55,6 +59,8 @@ export default function Create({
                         patients={patients}
                         clinicians={clinicians}
                         examRooms={examRooms}
+                        preselectedDate={preselectedDate}
+                        preselectedTime={preselectedTime}
                     />
                 </div>
             </div>

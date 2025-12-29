@@ -6,6 +6,7 @@ use App\Enums\AppointmentStatus;
 use App\Enums\OrganizationRole;
 use App\Http\Requests\AssignRoomRequest;
 use App\Http\Requests\CancelAppointmentRequest;
+use App\Http\Requests\RescheduleAppointmentRequest;
 use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Requests\UpdateAppointmentRequest;
 use App\Models\Appointment;
@@ -48,13 +49,36 @@ class AppointmentController extends Controller
 
         $appointments = $query->latest('appointment_date')->paginate(15)->withQueryString();
 
+        $organization = auth()->user()->currentOrganization;
+        $operatingHours = [
+            'startTime' => $organization?->operating_hours_start ?? '08:00:00',
+            'endTime' => $organization?->operating_hours_end ?? '18:00:00',
+        ];
+        $timeSlotInterval = auth()->user()->calendar_time_slot_interval ?? $organization?->default_time_slot_interval ?? 15;
+
         return Inertia::render('Appointments/Index', [
             'appointments' => $appointments,
             'filters' => $request->only(['status', 'date', 'clinician_id']),
+            'clinicians' => $organization
+                ? $organization->users()
+                    ->wherePivotIn('role', [\App\Enums\OrganizationRole::Clinician->value, \App\Enums\OrganizationRole::Admin->value, \App\Enums\OrganizationRole::Owner->value])
+                    ->orderBy('name')
+                    ->get()
+                    ->values()
+                    ->toArray()
+                : [],
+            'examRooms' => $organization
+                ? $organization->examRooms()->where('is_active', true)->orderBy('room_number')->get()->values()->toArray()
+                : [],
+            'patients' => $organization
+                ? $organization->patients()->orderBy('last_name')->get()->values()->toArray()
+                : [],
+            'operatingHours' => $operatingHours,
+            'timeSlotInterval' => $timeSlotInterval,
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', Appointment::class);
 
@@ -67,6 +91,8 @@ class AppointmentController extends Controller
                 ->orderBy('name')
                 ->get() ?? collect(),
             'examRooms' => $organization?->examRooms()->where('is_active', true)->orderBy('room_number')->get() ?? collect(),
+            'preselectedDate' => $request->get('date'),
+            'preselectedTime' => $request->get('time'),
         ]);
     }
 
@@ -117,8 +143,14 @@ class AppointmentController extends Controller
     {
         try {
             $updateData = array_merge($appointment->only([
-                'patient_id', 'user_id', 'exam_room_id', 'appointment_date',
-                'appointment_time', 'duration_minutes', 'appointment_type', 'notes',
+                'patient_id',
+                'user_id',
+                'exam_room_id',
+                'appointment_date',
+                'appointment_time',
+                'duration_minutes',
+                'appointment_type',
+                'notes',
             ]), $request->validated());
 
             if (isset($updateData['appointment_date']) && is_string($updateData['appointment_date'])) {
@@ -286,5 +318,41 @@ class AppointmentController extends Controller
         );
 
         return response()->json(['rooms' => $availability->values()]);
+    }
+
+    public function reschedule(RescheduleAppointmentRequest $request, Appointment $appointment): JsonResponse
+    {
+        $newDate = Carbon::parse($request->validated()['appointment_date']);
+        $newTime = Carbon::parse($request->validated()['appointment_time']);
+        $duration = $request->validated()['duration_minutes'] ?? $appointment->duration_minutes;
+        $forceReschedule = $request->boolean('force_reschedule', false);
+
+        // Check for conflicts
+        $conflicts = $this->appointmentService->checkRescheduleConflicts(
+            $appointment,
+            $newDate,
+            $newTime,
+            $duration
+        );
+
+        if (! empty($conflicts) && ! $forceReschedule) {
+            return response()->json([
+                'success' => false,
+                'conflicts' => $conflicts,
+            ], 422);
+        }
+
+        // Reschedule appointment
+        $this->appointmentService->rescheduleAppointment(
+            $appointment,
+            $newDate,
+            $newTime,
+            $duration
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment rescheduled successfully.',
+        ]);
     }
 }
