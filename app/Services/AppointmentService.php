@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\DB;
 class AppointmentService
 {
     public function __construct(
-        private ExamRoomService $examRoomService
+        private ExamRoomService $examRoomService,
+        private AppointmentConflictService $conflictService
     ) {}
 
     public function scheduleAppointment(array $data): Appointment
@@ -26,7 +27,7 @@ class AppointmentService
             $date = Carbon::parse($data['appointment_date']);
             $time = TimeParser::parse($data['appointment_time']);
 
-            if (! $this->checkClinicianAvailability(
+            if ($this->conflictService->hasClinicianConflict(
                 $data['user_id'],
                 $date,
                 $time,
@@ -37,7 +38,7 @@ class AppointmentService
 
             if (isset($data['exam_room_id']) && $data['exam_room_id']) {
                 $room = ExamRoom::findOrFail($data['exam_room_id']);
-                if (! $this->checkRoomAvailability(
+                if ($this->conflictService->hasRoomConflict(
                     $room->id,
                     $date,
                     $time,
@@ -104,7 +105,7 @@ class AppointmentService
             $date = Carbon::parse($appointment->appointment_date);
             $time = TimeParser::parse($appointment->appointment_time);
 
-            if (! $this->checkRoomAvailability(
+            if ($this->conflictService->hasRoomConflict(
                 $room->id,
                 $date,
                 $time,
@@ -136,14 +137,14 @@ class AppointmentService
             $userId = $data['user_id'] ?? $appointment->user_id;
 
             if (($data['appointment_date'] ?? null) || ($data['appointment_time'] ?? null) || ($data['user_id'] ?? null) || ($data['duration_minutes'] ?? null)) {
-                if (! $this->checkClinicianAvailability($userId, $date, $time, $duration, $appointment->id)) {
+                if ($this->conflictService->hasClinicianConflict($userId, $date, $time, $duration, $appointment->id)) {
                     throw new \RuntimeException('Clinician is not available at the requested time.');
                 }
             }
 
             if (isset($data['exam_room_id']) && $data['exam_room_id']) {
                 $room = ExamRoom::findOrFail($data['exam_room_id']);
-                if (! $this->checkRoomAvailability($room->id, $date, $time, $duration, $appointment->id)) {
+                if ($this->conflictService->hasRoomConflict($room->id, $date, $time, $duration, $appointment->id)) {
                     throw new \RuntimeException('Room is not available at the requested time.');
                 }
             }
@@ -193,7 +194,7 @@ class AppointmentService
         $appointments = Appointment::whereDate('appointment_date', $date->toDateString())
             ->where('exam_room_id', $roomId)
             ->whereIn('status', ['scheduled', 'in_progress'])
-            ->when($excludeAppointmentId, fn($q) => $q->where('id', '!=', $excludeAppointmentId))
+            ->when($excludeAppointmentId, fn ($q) => $q->where('id', '!=', $excludeAppointmentId))
             ->get();
 
         return $appointments->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
@@ -219,7 +220,7 @@ class AppointmentService
         $appointments = Appointment::whereDate('appointment_date', $date->toDateString())
             ->where('user_id', $userId)
             ->whereIn('status', ['scheduled', 'in_progress'])
-            ->when($excludeAppointmentId, fn($q) => $q->where('id', '!=', $excludeAppointmentId))
+            ->when($excludeAppointmentId, fn ($q) => $q->where('id', '!=', $excludeAppointmentId))
             ->get();
 
         return $appointments->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
@@ -240,26 +241,14 @@ class AppointmentService
     ): array {
         $conflicts = [];
 
-        // Create proper datetime objects for comparison
-        $newStart = $newDate->copy()->setTime($newTime->hour, $newTime->minute, 0);
-        $newEnd = $newStart->copy()->addMinutes($duration);
-
-        // Check clinician availability
-        $clinicianConflicts = Appointment::where('user_id', $appointment->user_id)
-            ->where('id', '!=', $appointment->id)
-            ->where('organization_id', $appointment->organization_id)
-            ->whereDate('appointment_date', $newDate->toDateString())
-            ->whereNotIn('status', [AppointmentStatus::Cancelled])
-            ->with('patient')
-            ->get()
-            ->filter(function (Appointment $existing) use ($newStart, $newEnd) {
-                $existingStart = Carbon::parse($existing->appointment_date)
-                    ->setTimeFromTimeString($existing->appointment_time);
-                $existingEnd = $existingStart->copy()->addMinutes($existing->duration_minutes);
-
-                // Check if appointments overlap: newStart < existingEnd AND newEnd > existingStart
-                return $newStart->lt($existingEnd) && $newEnd->gt($existingStart);
-            });
+        // Check clinician conflicts
+        $clinicianConflicts = $this->conflictService->findClinicianConflicts(
+            $appointment->user_id,
+            $newDate,
+            $newTime,
+            $duration,
+            $appointment->id
+        )->load('patient');
 
         if ($clinicianConflicts->isNotEmpty()) {
             $conflicts[] = [
@@ -269,29 +258,21 @@ class AppointmentService
                     return [
                         'id' => $apt->id,
                         'patientName' => $apt->patient ? "{$apt->patient->first_name} {$apt->patient->last_name}" : 'Unknown',
-                        'time' => "{$apt->appointment_time} - " . Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
+                        'time' => "{$apt->appointment_time} - ".Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
                     ];
                 })->toArray(),
             ];
         }
 
-        // Check exam room availability (if room is assigned)
+        // Check exam room conflicts (if room is assigned)
         if ($appointment->exam_room_id) {
-            $roomConflicts = Appointment::where('exam_room_id', $appointment->exam_room_id)
-                ->where('id', '!=', $appointment->id)
-                ->where('organization_id', $appointment->organization_id)
-                ->whereDate('appointment_date', $newDate->toDateString())
-                ->whereNotIn('status', [AppointmentStatus::Cancelled])
-                ->with('patient')
-                ->get()
-                ->filter(function (Appointment $existing) use ($newStart, $newEnd) {
-                    $existingStart = Carbon::parse($existing->appointment_date)
-                        ->setTimeFromTimeString($existing->appointment_time);
-                    $existingEnd = $existingStart->copy()->addMinutes($existing->duration_minutes);
-
-                    // Check if appointments overlap: newStart < existingEnd AND newEnd > existingStart
-                    return $newStart->lt($existingEnd) && $newEnd->gt($existingStart);
-                });
+            $roomConflicts = $this->conflictService->findRoomConflicts(
+                $appointment->exam_room_id,
+                $newDate,
+                $newTime,
+                $duration,
+                $appointment->id
+            )->load('patient');
 
             if ($roomConflicts->isNotEmpty()) {
                 $conflicts[] = [
@@ -301,7 +282,7 @@ class AppointmentService
                         return [
                             'id' => $apt->id,
                             'patientName' => $apt->patient ? "{$apt->patient->first_name} {$apt->patient->last_name}" : 'Unknown',
-                            'time' => "{$apt->appointment_time} - " . Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
+                            'time' => "{$apt->appointment_time} - ".Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
                         ];
                     })->toArray(),
                 ];

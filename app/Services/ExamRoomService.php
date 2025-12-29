@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\AppointmentStatus;
-use App\Models\Appointment;
 use App\Models\ExamRoom;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,7 +11,8 @@ use Illuminate\Support\Facades\DB;
 class ExamRoomService
 {
     public function __construct(
-        private AuditService $auditService
+        private AuditService $auditService,
+        private AppointmentConflictService $conflictService
     ) {}
 
     public function createRoom(array $data): ExamRoom
@@ -56,33 +55,10 @@ class ExamRoomService
 
     public function getAvailableRooms(Carbon $date, Carbon $time, int $duration): Collection
     {
-        $dateString = $date->toDateString();
-        $requestStartMinutes = $time->hour * 60 + $time->minute;
-        $requestEndMinutes = $requestStartMinutes + $duration;
+        $allRooms = ExamRoom::active()->get();
 
-        $conflictingRoomIds = Appointment::where('appointment_date', $dateString)
-            ->whereNotNull('exam_room_id')
-            ->whereIn('status', [AppointmentStatus::Scheduled, AppointmentStatus::InProgress])
-            ->get()
-            ->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
-                $timeParts = explode(':', $appointment->appointment_time);
-                $apptStartMinutes = ((int) $timeParts[0]) * 60 + ((int) ($timeParts[1] ?? 0));
-                $apptEndMinutes = $apptStartMinutes + $appointment->duration_minutes;
-
-                return $requestStartMinutes < $apptEndMinutes && $requestEndMinutes > $apptStartMinutes;
-            })
-            ->pluck('exam_room_id')
-            ->unique()
-            ->filter()
-            ->values()
-            ->toArray();
-
-        if (empty($conflictingRoomIds)) {
-            return ExamRoom::active()->get();
-        }
-
-        return ExamRoom::active()
-            ->whereNotIn('id', $conflictingRoomIds)
-            ->get();
+        return $allRooms->filter(function (ExamRoom $room) use ($date, $time, $duration) {
+            return ! $this->conflictService->hasRoomConflict($room->id, $date, $time, $duration);
+        });
     }
 }

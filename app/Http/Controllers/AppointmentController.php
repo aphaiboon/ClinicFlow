@@ -27,36 +27,23 @@ class AppointmentController extends Controller
         protected AppointmentService $appointmentService,
         protected ExamRoomAvailabilityService $roomAvailabilityService,
         protected OrganizationDataService $organizationDataService,
-        protected \App\Services\AppointmentCalendarFormatter $calendarFormatter
+        protected \App\Services\AppointmentCalendarFormatter $calendarFormatter,
+        protected \App\Services\AppointmentQueryBuilder $queryBuilder
     ) {}
 
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Appointment::class);
 
-        $query = Appointment::query()
-            ->with(['patient', 'user', 'examRoom']);
-
-        if ($request->has('status')) {
-            $query->byStatus(\App\Enums\AppointmentStatus::from($request->get('status')));
-        }
-
-        if ($request->has('date')) {
-            $date = \Carbon\Carbon::parse($request->get('date'));
-            $query->byDateRange($date, $date);
-        }
-
-        if ($request->has('clinician_id')) {
-            $query->byClinician($request->get('clinician_id'));
-        }
-
-        $appointments = $query->latest('appointment_date')->paginate(15)->withQueryString();
-
         $organization = auth()->user()->currentOrganization;
+        $appointments = $this->queryBuilder->getPaginatedAppointments(
+            $request,
+            $organization?->id
+        );
 
         return Inertia::render('Appointments/Index', [
             'appointments' => $appointments,
-            'filters' => $request->only(['status', 'date', 'clinician_id']),
+            'filters' => $request->only(['status', 'date', 'clinician_id', 'exam_room_id']),
             'clinicians' => $this->organizationDataService->getClinicians($organization),
             'examRooms' => $this->organizationDataService->getExamRooms($organization),
             'patients' => $this->organizationDataService->getPatients($organization),
@@ -220,7 +207,7 @@ class AppointmentController extends Controller
         $appointments = $query->get();
 
         // Format appointments for FullCalendar
-        $events = $appointments->map(fn(Appointment $appointment) => $this->calendarFormatter->format($appointment));
+        $events = $appointments->map(fn (Appointment $appointment) => $this->calendarFormatter->format($appointment));
 
         return response()->json(['events' => $events]);
     }
