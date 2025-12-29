@@ -10,7 +10,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
-import { index, reschedule, store } from '@/routes/appointments/index';
+import { index } from '@/routes/appointments/index';
 import {
     type Appointment,
     type BreadcrumbItem,
@@ -104,7 +104,6 @@ export default function Index({
         quickCreateDate,
         quickCreateTime,
         conflictData,
-        setConflictData,
         openDetailModal,
         closeDetailModal,
         openConflictModal,

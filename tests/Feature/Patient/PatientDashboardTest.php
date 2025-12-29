@@ -25,7 +25,7 @@ test('authenticated patient can access dashboard', function () {
         ->get(route('patient.dashboard'));
 
     $response->assertOk()
-        ->assertInertia(fn(Assert $page) => $page->component('Patient/Dashboard'));
+        ->assertInertia(fn (Assert $page) => $page->component('Patient/Dashboard'));
 });
 
 test('dashboard displays only patients own appointments', function () {
@@ -44,7 +44,7 @@ test('dashboard displays only patients own appointments', function () {
 
     $response->assertOk()
         ->assertInertia(
-            fn(Assert $page) => $page
+            fn (Assert $page) => $page
                 ->component('Patient/Dashboard')
                 ->has('upcomingAppointments', 1)
                 ->where('upcomingAppointments.0.id', $patientAppointment->id)
@@ -78,7 +78,7 @@ test('dashboard shows upcoming appointments correctly', function () {
 
     $response->assertOk()
         ->assertInertia(
-            fn(Assert $page) => $page
+            fn (Assert $page) => $page
                 ->component('Patient/Dashboard')
                 ->has('upcomingAppointments', 2)
                 ->where('upcomingAppointments.0.id', $upcomingAppointment1->id)
@@ -104,7 +104,7 @@ test('dashboard shows recent appointments correctly', function () {
 
     $response->assertOk()
         ->assertInertia(
-            fn(Assert $page) => $page
+            fn (Assert $page) => $page
                 ->component('Patient/Dashboard')
                 ->has('recentAppointments', 2)
                 ->where('recentAppointments.0.id', $recentAppointment2->id)
@@ -128,7 +128,7 @@ test('dashboard excludes cancelled appointments from upcoming', function () {
 
     $response->assertOk()
         ->assertInertia(
-            fn(Assert $page) => $page
+            fn (Assert $page) => $page
                 ->component('Patient/Dashboard')
                 ->has('upcomingAppointments', 1)
                 ->where('upcomingAppointments.0.id', $scheduledAppointment->id)
@@ -151,7 +151,7 @@ test('dashboard displays correct appointment counts', function () {
 
     $response->assertOk()
         ->assertInertia(
-            fn(Assert $page) => $page
+            fn (Assert $page) => $page
                 ->component('Patient/Dashboard')
                 ->has('upcomingAppointments', 3)
                 ->has('recentAppointments', 2)
@@ -186,7 +186,7 @@ test('dashboard loads with proper Inertia props', function () {
 
     $response->assertOk()
         ->assertInertia(
-            fn(Assert $page) => $page
+            fn (Assert $page) => $page
                 ->component('Patient/Dashboard')
                 ->has('upcomingAppointments')
                 ->has('recentAppointments')
@@ -200,7 +200,7 @@ test('dashboard handles empty appointment states', function () {
 
     $response->assertOk()
         ->assertInertia(
-            fn(Assert $page) => $page
+            fn (Assert $page) => $page
                 ->component('Patient/Dashboard')
                 ->has('upcomingAppointments', 0)
                 ->has('recentAppointments', 0)

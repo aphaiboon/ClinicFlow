@@ -13,7 +13,6 @@ import {
     type User,
 } from '@/types';
 import { router } from '@inertiajs/react';
-import { useState } from 'react';
 
 interface QuickCreateAppointmentModalProps {
     isOpen: boolean;

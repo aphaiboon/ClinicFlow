@@ -256,4 +256,3 @@ test('appointment cancellation creates audit log', function () {
         'metadata->patient_id' => $this->patient->id,
     ]);
 });
-

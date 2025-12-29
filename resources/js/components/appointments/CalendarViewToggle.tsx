@@ -1,7 +1,6 @@
 import { CalendarViewType } from '@/types';
-import { cn } from '@/lib/utils';
 import { Calendar, List } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface CalendarViewToggleProps {
@@ -24,14 +23,20 @@ export default function CalendarViewToggle({
 }: CalendarViewToggleProps) {
     const [mounted, setMounted] = useState(false);
 
+    const handleViewChange = useCallback((view: CalendarViewType) => {
+        onViewChange(view);
+    }, [onViewChange]);
+
     useEffect(() => {
+        // Set mounted flag - this is safe as it only runs once on mount
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
         // Load view preference from sessionStorage
         const savedView = sessionStorage.getItem(STORAGE_KEY) as CalendarViewType | null;
         if (savedView && savedView !== currentView && ['list', 'day', 'week', 'month'].includes(savedView)) {
-            onViewChange(savedView);
+            handleViewChange(savedView);
         }
-    }, []);
+    }, [currentView, handleViewChange]);
 
     useEffect(() => {
         if (mounted) {

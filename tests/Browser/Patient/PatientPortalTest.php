@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\Organization;
 use App\Models\Patient;
 use App\Models\User;
-use App\Enums\AppointmentStatus;
 use App\Notifications\PatientMagicLinkNotification;
 use Illuminate\Support\Facades\Notification;
 
@@ -168,4 +168,3 @@ it('shows correct cancellation eligibility on appointment details', function () 
     $page->assertSee('Cancel Appointment')
         ->assertNoJavascriptErrors();
 });
-

@@ -5,7 +5,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import { type CalendarEvent, type CalendarViewType } from '@/types';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { router } from '@inertiajs/react';
 import type { EventInput, DatesSetArg, EventClickArg, EventDropArg, DateSelectArg } from '@fullcalendar/core';
 
 interface AppointmentCalendarProps {
@@ -126,11 +125,6 @@ export default function AppointmentCalendar({
     // Handle drag and drop
     const handleEventDrop = useCallback(
         async (dropInfo: EventDropArg) => {
-            const event = dropInfo.event;
-            const extendedProps = event.extendedProps as CalendarEvent['extendedProps'];
-            const newStart = dropInfo.event.start!;
-            const newEnd = dropInfo.event.end || newStart;
-
             // Revert the visual change immediately
             dropInfo.revert();
 

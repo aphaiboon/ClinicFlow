@@ -10,7 +10,7 @@ import {
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { type CalendarEvent } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Calendar, Clock, MapPin, User as UserIcon, Phone, Mail } from 'lucide-react';
+import { Calendar, Clock, MapPin, User as UserIcon } from 'lucide-react';
 import { show } from '@/routes/appointments/index';
 
 interface AppointmentDetailModalProps {
@@ -47,7 +47,7 @@ export default function AppointmentDetailModal({
                             <h3 className="text-lg font-semibold">
                                 {appointment.patientName}
                             </h3>
-                            <StatusBadge status={appointment.status as any} />
+                            <StatusBadge status={appointment.status as 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'no_show'} />
                         </div>
 
                         {appointmentDate && (

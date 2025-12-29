@@ -83,7 +83,7 @@ test('admin sees all organization appointments in calendar', function () {
         'appointment_time' => '11:00',
     ]);
 
-    $response = actingAs($this->admin)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $tomorrow);
+    $response = actingAs($this->admin)->get('/appointments/calendar?start_date='.$today.'&end_date='.$tomorrow);
 
     $response->assertSuccessful();
     $response->assertJsonStructure([
@@ -139,7 +139,7 @@ test('clinician sees only their scheduled appointments in calendar', function ()
         'status' => AppointmentStatus::Scheduled,
     ]);
 
-    $response = actingAs($this->clinician)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $today);
+    $response = actingAs($this->clinician)->get('/appointments/calendar?start_date='.$today.'&end_date='.$today);
 
     $response->assertSuccessful();
     $events = $response->json('events');
@@ -164,7 +164,7 @@ test('receptionist sees all organization appointments in calendar', function () 
         'appointment_time' => '14:00',
     ]);
 
-    $response = actingAs($this->receptionist)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $today);
+    $response = actingAs($this->receptionist)->get('/appointments/calendar?start_date='.$today.'&end_date='.$today);
 
     $response->assertSuccessful();
     $events = $response->json('events');
@@ -191,7 +191,7 @@ test('calendar endpoint filters by date range', function () {
         'appointment_time' => '16:00',
     ]);
 
-    $response = actingAs($this->admin)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $tomorrow);
+    $response = actingAs($this->admin)->get('/appointments/calendar?start_date='.$today.'&end_date='.$tomorrow);
 
     $response->assertSuccessful();
     $events = $response->json('events');
@@ -219,7 +219,7 @@ test('calendar endpoint filters by exam room', function () {
         'appointment_time' => '16:00',
     ]);
 
-    $response = actingAs($this->admin)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $today . '&exam_room_id=' . $this->examRoom->id);
+    $response = actingAs($this->admin)->get('/appointments/calendar?start_date='.$today.'&end_date='.$today.'&exam_room_id='.$this->examRoom->id);
 
     $response->assertSuccessful();
     $events = $response->json('events');
@@ -239,7 +239,7 @@ test('calendar endpoint includes all required relationships', function () {
         'duration_minutes' => 30,
     ]);
 
-    $response = actingAs($this->admin)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $today);
+    $response = actingAs($this->admin)->get('/appointments/calendar?start_date='.$today.'&end_date='.$today);
 
     $response->assertSuccessful();
     $events = $response->json('events');
@@ -270,7 +270,7 @@ test('calendar endpoint formats events correctly for FullCalendar', function () 
         'duration_minutes' => 45,
     ]);
 
-    $response = actingAs($this->admin)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $today);
+    $response = actingAs($this->admin)->get('/appointments/calendar?start_date='.$today.'&end_date='.$today);
 
     $response->assertSuccessful();
     $events = $response->json('events');
@@ -300,7 +300,7 @@ test('calendar endpoint uses eager loading to prevent n+1 queries', function () 
         $queryCount++;
     });
 
-    actingAs($this->admin)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $today);
+    actingAs($this->admin)->get('/appointments/calendar?start_date='.$today.'&end_date='.$today);
 
     // Should be minimal queries: 1 for appointments with eager loading, maybe 1-2 more for organization/user checks
     // Without eager loading, this would be 1 + 10*3 = 31 queries (appointments + patients + users + examRooms)
@@ -330,7 +330,7 @@ test('calendar endpoint excludes cancelled appointments by default', function ()
         'status' => AppointmentStatus::Cancelled,
     ]);
 
-    $response = actingAs($this->admin)->get('/appointments/calendar?start_date=' . $today . '&end_date=' . $today);
+    $response = actingAs($this->admin)->get('/appointments/calendar?start_date='.$today.'&end_date='.$today);
 
     $response->assertSuccessful();
     $events = $response->json('events');
