@@ -24,8 +24,7 @@ class AppointmentService
     {
         return DB::transaction(function () use ($data) {
             $date = Carbon::parse($data['appointment_date']);
-            $timeParts = explode(':', $data['appointment_time']);
-            $time = Carbon::createFromTime((int) $timeParts[0], (int) ($timeParts[1] ?? 0), (int) ($timeParts[2] ?? 0));
+            $time = TimeParser::parse($data['appointment_time']);
 
             if (! $this->checkClinicianAvailability(
                 $data['user_id'],
@@ -103,8 +102,7 @@ class AppointmentService
             }
 
             $date = Carbon::parse($appointment->appointment_date);
-            $timeParts = explode(':', $appointment->appointment_time);
-            $time = Carbon::createFromTime((int) $timeParts[0], (int) ($timeParts[1] ?? 0), (int) ($timeParts[2] ?? 0));
+            $time = TimeParser::parse($appointment->appointment_time);
 
             if (! $this->checkRoomAvailability(
                 $room->id,
@@ -133,8 +131,7 @@ class AppointmentService
     {
         return DB::transaction(function () use ($appointment, $data) {
             $date = Carbon::parse($data['appointment_date'] ?? $appointment->appointment_date->toDateString());
-            $timeParts = explode(':', $data['appointment_time'] ?? $appointment->appointment_time);
-            $time = Carbon::createFromTime((int) $timeParts[0], (int) ($timeParts[1] ?? 0), (int) ($timeParts[2] ?? 0));
+            $time = TimeParser::parse($data['appointment_time'] ?? $appointment->appointment_time);
             $duration = $data['duration_minutes'] ?? $appointment->duration_minutes;
             $userId = $data['user_id'] ?? $appointment->user_id;
 

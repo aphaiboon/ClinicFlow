@@ -13,6 +13,7 @@ use App\Models\Appointment;
 use App\Models\ExamRoom;
 use App\Services\AppointmentService;
 use App\Services\ExamRoomAvailabilityService;
+use App\Services\OrganizationDataService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -24,7 +25,9 @@ class AppointmentController extends Controller
 {
     public function __construct(
         protected AppointmentService $appointmentService,
-        protected ExamRoomAvailabilityService $roomAvailabilityService
+        protected ExamRoomAvailabilityService $roomAvailabilityService,
+        protected OrganizationDataService $organizationDataService,
+        protected \App\Services\AppointmentCalendarFormatter $calendarFormatter
     ) {}
 
     public function index(Request $request): Response
@@ -50,31 +53,15 @@ class AppointmentController extends Controller
         $appointments = $query->latest('appointment_date')->paginate(15)->withQueryString();
 
         $organization = auth()->user()->currentOrganization;
-        $operatingHours = [
-            'startTime' => $organization?->operating_hours_start ?? '08:00:00',
-            'endTime' => $organization?->operating_hours_end ?? '18:00:00',
-        ];
-        $timeSlotInterval = auth()->user()->calendar_time_slot_interval ?? $organization?->default_time_slot_interval ?? 15;
 
         return Inertia::render('Appointments/Index', [
             'appointments' => $appointments,
             'filters' => $request->only(['status', 'date', 'clinician_id']),
-            'clinicians' => $organization
-                ? $organization->users()
-                    ->wherePivotIn('role', [\App\Enums\OrganizationRole::Clinician->value, \App\Enums\OrganizationRole::Admin->value, \App\Enums\OrganizationRole::Owner->value])
-                    ->orderBy('name')
-                    ->get()
-                    ->values()
-                    ->toArray()
-                : [],
-            'examRooms' => $organization
-                ? $organization->examRooms()->where('is_active', true)->orderBy('room_number')->get()->values()->toArray()
-                : [],
-            'patients' => $organization
-                ? $organization->patients()->orderBy('last_name')->get()->values()->toArray()
-                : [],
-            'operatingHours' => $operatingHours,
-            'timeSlotInterval' => $timeSlotInterval,
+            'clinicians' => $this->organizationDataService->getClinicians($organization),
+            'examRooms' => $this->organizationDataService->getExamRooms($organization),
+            'patients' => $this->organizationDataService->getPatients($organization),
+            'operatingHours' => $this->organizationDataService->getOperatingHours($organization),
+            'timeSlotInterval' => $this->organizationDataService->getTimeSlotInterval($organization, auth()->user()),
         ]);
     }
 
@@ -85,12 +72,9 @@ class AppointmentController extends Controller
         $organization = auth()->user()->currentOrganization;
 
         return Inertia::render('Appointments/Create', [
-            'patients' => $organization?->patients()->orderBy('last_name')->get() ?? collect(),
-            'clinicians' => $organization?->users()
-                ->wherePivotIn('role', [\App\Enums\OrganizationRole::Clinician->value, \App\Enums\OrganizationRole::Admin->value, \App\Enums\OrganizationRole::Owner->value])
-                ->orderBy('name')
-                ->get() ?? collect(),
-            'examRooms' => $organization?->examRooms()->where('is_active', true)->orderBy('room_number')->get() ?? collect(),
+            'patients' => $this->organizationDataService->getPatients($organization),
+            'clinicians' => $this->organizationDataService->getClinicians($organization),
+            'examRooms' => $this->organizationDataService->getExamRooms($organization),
             'preselectedDate' => $request->get('date'),
             'preselectedTime' => $request->get('time'),
         ]);
@@ -130,12 +114,9 @@ class AppointmentController extends Controller
 
         return Inertia::render('Appointments/Edit', [
             'appointment' => $appointment,
-            'patients' => $organization?->patients()->orderBy('last_name')->get() ?? collect(),
-            'clinicians' => $organization?->users()
-                ->wherePivotIn('role', [\App\Enums\OrganizationRole::Clinician->value, \App\Enums\OrganizationRole::Admin->value, \App\Enums\OrganizationRole::Owner->value])
-                ->orderBy('name')
-                ->get() ?? collect(),
-            'examRooms' => $organization?->examRooms()->where('is_active', true)->orderBy('room_number')->get() ?? collect(),
+            'patients' => $this->organizationDataService->getPatients($organization),
+            'clinicians' => $this->organizationDataService->getClinicians($organization),
+            'examRooms' => $this->organizationDataService->getExamRooms($organization),
         ]);
     }
 
@@ -239,50 +220,7 @@ class AppointmentController extends Controller
         $appointments = $query->get();
 
         // Format appointments for FullCalendar
-        $events = $appointments->map(function (Appointment $appointment) {
-            $startDateTime = Carbon::parse($appointment->appointment_date)
-                ->setTimeFromTimeString($appointment->appointment_time);
-            $endDateTime = $startDateTime->copy()->addMinutes($appointment->duration_minutes);
-
-            $patientName = $appointment->patient
-                ? "{$appointment->patient->first_name} {$appointment->patient->last_name}"
-                : 'Unknown Patient';
-
-            $clinicianName = $appointment->user?->name ?? 'Unknown Clinician';
-
-            // Determine event color based on status
-            $colors = [
-                AppointmentStatus::Scheduled->value => '#3b82f6', // blue
-                AppointmentStatus::InProgress->value => '#f97316', // orange
-                AppointmentStatus::Completed->value => '#22c55e', // green
-                AppointmentStatus::NoShow->value => '#ef4444', // red
-            ];
-
-            $statusColor = $colors[$appointment->status->value] ?? '#6b7280';
-
-            return [
-                'id' => "appointment-{$appointment->id}",
-                'title' => $patientName,
-                'start' => $startDateTime->toIso8601String(),
-                'end' => $endDateTime->toIso8601String(),
-                'backgroundColor' => $statusColor,
-                'borderColor' => $statusColor,
-                'textColor' => '#ffffff',
-                'extendedProps' => [
-                    'appointmentId' => $appointment->id,
-                    'patientId' => $appointment->patient_id,
-                    'patientName' => $patientName,
-                    'clinicianId' => $appointment->user_id,
-                    'clinicianName' => $clinicianName,
-                    'examRoomId' => $appointment->exam_room_id,
-                    'examRoomName' => $appointment->examRoom?->name,
-                    'status' => $appointment->status->value,
-                    'appointmentType' => $appointment->appointment_type->value,
-                    'durationMinutes' => $appointment->duration_minutes,
-                    'notes' => $appointment->notes,
-                ],
-            ];
-        });
+        $events = $appointments->map(fn (Appointment $appointment) => $this->calendarFormatter->format($appointment));
 
         return response()->json(['events' => $events]);
     }
