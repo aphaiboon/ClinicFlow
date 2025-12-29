@@ -193,7 +193,7 @@ class AppointmentService
         $appointments = Appointment::whereDate('appointment_date', $date->toDateString())
             ->where('exam_room_id', $roomId)
             ->whereIn('status', ['scheduled', 'in_progress'])
-            ->when($excludeAppointmentId, fn ($q) => $q->where('id', '!=', $excludeAppointmentId))
+            ->when($excludeAppointmentId, fn($q) => $q->where('id', '!=', $excludeAppointmentId))
             ->get();
 
         return $appointments->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
@@ -219,7 +219,7 @@ class AppointmentService
         $appointments = Appointment::whereDate('appointment_date', $date->toDateString())
             ->where('user_id', $userId)
             ->whereIn('status', ['scheduled', 'in_progress'])
-            ->when($excludeAppointmentId, fn ($q) => $q->where('id', '!=', $excludeAppointmentId))
+            ->when($excludeAppointmentId, fn($q) => $q->where('id', '!=', $excludeAppointmentId))
             ->get();
 
         return $appointments->filter(function ($appointment) use ($requestStartMinutes, $requestEndMinutes) {
@@ -269,7 +269,7 @@ class AppointmentService
                     return [
                         'id' => $apt->id,
                         'patientName' => $apt->patient ? "{$apt->patient->first_name} {$apt->patient->last_name}" : 'Unknown',
-                        'time' => "{$apt->appointment_time} - ".Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
+                        'time' => "{$apt->appointment_time} - " . Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
                     ];
                 })->toArray(),
             ];
@@ -301,7 +301,7 @@ class AppointmentService
                         return [
                             'id' => $apt->id,
                             'patientName' => $apt->patient ? "{$apt->patient->first_name} {$apt->patient->last_name}" : 'Unknown',
-                            'time' => "{$apt->appointment_time} - ".Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
+                            'time' => "{$apt->appointment_time} - " . Carbon::parse($apt->appointment_time)->addMinutes($apt->duration_minutes)->format('H:i'),
                         ];
                     })->toArray(),
                 ];

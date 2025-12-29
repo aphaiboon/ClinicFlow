@@ -220,7 +220,7 @@ class AppointmentController extends Controller
         $appointments = $query->get();
 
         // Format appointments for FullCalendar
-        $events = $appointments->map(fn (Appointment $appointment) => $this->calendarFormatter->format($appointment));
+        $events = $appointments->map(fn(Appointment $appointment) => $this->calendarFormatter->format($appointment));
 
         return response()->json(['events' => $events]);
     }
