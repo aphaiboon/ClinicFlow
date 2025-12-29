@@ -26,6 +26,9 @@ it('has fillable attributes', function () {
         'practice_type',
         'license_number',
         'is_active',
+        'operating_hours_start',
+        'operating_hours_end',
+        'default_time_slot_interval',
     ];
 
     expect($organization->getFillable())->toBe($fillable);
